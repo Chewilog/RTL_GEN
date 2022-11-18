@@ -5,6 +5,21 @@ import sys
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 
+class InOut:
+    def __init__(self, name, port, var_type, is_signal):
+        self.name = name
+        self.port = port
+        self.type = var_type
+        self.is_signal = is_signal
+
+
+class Component:
+    def __init__(self, name, entity):
+        self.name = name
+        self.entity = entity
+        self.ports = []
+
+
 def generate(file2open, output_name):
     # Use a breakpoint in the code line below to debug your script.
 
