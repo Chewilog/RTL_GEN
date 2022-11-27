@@ -43,7 +43,7 @@ def get_genport(line):
             aux.append(line2[i])
 
     line2 = aux
-    print(line2)
+
     for i in range(len(line2)):
         if line2[i] == '=':
 
