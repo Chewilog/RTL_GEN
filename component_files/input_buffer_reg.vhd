@@ -37,7 +37,8 @@ entity input_buffer_reg is
            x : in STD_LOGIC_VECTOR (7 downto 0);
            l_buffer : in STD_LOGIC;
            c_buffer : in STD_LOGIC;
-           reg_output : out STD_LOGIC_VECTOR (7 downto 0));
+           reg_output : out STD_LOGIC_VECTOR (7 downto 0)
+           );
 end input_buffer_reg;
 
 architecture Behavioral of input_buffer_reg is

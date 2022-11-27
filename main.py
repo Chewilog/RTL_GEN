@@ -43,10 +43,11 @@ def get_genport(line):
             aux.append(line2[i])
 
     line2 = aux
-
+    print(line2)
     for i in range(len(line2)):
         if line2[i] == '=':
-            return line2[i-1]
+
+            return (line2[i-2], line2[i-1])
     return ''
 
 def get_port(line):
@@ -64,7 +65,9 @@ def get_port(line):
         if not (line2[i] == ''):
             aux.append(line2[i])
 
+
     line2 = aux
+
     return line2
 
     # for i in range(len(line2)):
@@ -136,14 +139,22 @@ def generate(file2open, output_name):
 
                             if port[0] == 'PORT':
                                 port = port[1::]
+
+                            # if aux =='FFT':
+                            #     print(port)
+
+
                             if 'IN' in port:
                                 if len(port) == 3:
                                     component_aux[aux].in_ports.append((port[0], port[2]))
+                                else:
+                                    component_aux[aux].in_ports.append((port[0], port[2]+'( '+port[3]+' '+port[4]+' '+port[5]+' )'))
 
                             elif 'OUT' in port:
                                 if len(port) == 3:
                                     component_aux[aux].out_ports.append((port[0], port[2]))
-
+                                else:
+                                    component_aux[aux].out_ports.append((port[0], port[2]+'( '+port[3]+' '+port[4]+' '+port[5]+' )'))
                     if ')' in line and flag2 == 1:
                         flag2 = 0
 
@@ -157,6 +168,7 @@ def generate(file2open, output_name):
     for i in component_aux.keys():
         if '' in component_aux[i].generic_ports:
             component_aux[i].generic_ports = component_aux[i].generic_ports[:-1]
+        print(i,'-->',component_aux[i].generic_ports)
         print(i,'-->',component_aux[i].in_ports)
         print(i,'-->',component_aux[i].out_ports)
 
