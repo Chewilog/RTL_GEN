@@ -1,4 +1,5 @@
 # This is a sample Python script.
+import copy
 import xml.etree.ElementTree as ET
 import sys
 import os
@@ -24,13 +25,62 @@ class Component:
         self.out_ports = []
         self.generic_ports = []
 
+
+def get_genport(line):
+
+    line2 = line
+    line2 = line2.replace(':', ' ')
+    line2 = line2.replace('=', ' = ')
+    line2 = line2.replace('(', ' ')
+    line2 = line2.split(' ')
+    aux = []
+    for i in range(len(line2)):
+        line2[i] = line2[i].replace('(', '')
+        line2[i] = line2[i].replace(')', '')
+        line2[i] = line2[i].replace(';', '')
+        line2[i] = line2[i].replace('\n', '')
+        if not (line2[i] == ''):
+            aux.append(line2[i])
+
+    line2 = aux
+
+    for i in range(len(line2)):
+        if line2[i] == '=':
+            return line2[i-1]
+    return ''
+
+def get_port(line):
+    line2 = line.upper()
+    line2 = line2.replace(':', ' ')
+    line2 = line2.replace('=', ' = ')
+    line2 = line2.replace('(', ' ')
+    line2 = line2.split(' ')
+    aux = []
+    for i in range(len(line2)):
+        line2[i] = line2[i].replace('(', '')
+        line2[i] = line2[i].replace(')', '')
+        line2[i] = line2[i].replace(';', '')
+        line2[i] = line2[i].replace('\n', '')
+        if not (line2[i] == ''):
+            aux.append(line2[i])
+
+    line2 = aux
+    return line2
+
+    # for i in range(len(line2)):
+    #     if line2[i] == '=':
+    #         return line2[i - 1]
+    # return ''
+
 def generate(file2open, output_name):
     # Use a breakpoint in the code line below to debug your script.
 
     avaiable_components_list = []
     avaiable_components = {}
-    flag=0
+    flag = 0
+    flag2 = 0
     component_name=''
+
 
     #Initializing components
     if not os.path.isdir('component_files'):
@@ -47,33 +97,69 @@ def generate(file2open, output_name):
 
     file = open('components_list.pckl', 'rb')
     avaiable_components_list = pickle.load(file)
+    component_aux = {}
     for name in os.listdir('component_files'):
         if not(name[:-4] in avaiable_components_list):
             file = open('component_files/'+name, 'r')
             aux = ''
-            component_aux = {}
+
 
             for line in file.readlines():
                 if 'entity' in line:
                     flag = 1
+                    flag2 = 0
                     aux = line
                     aux = aux.replace('entity', '')
                     aux = aux.replace('is', '')
                     aux = aux.replace(' ', '')
+                    aux = aux.replace('\n', '')
                     component_aux[aux] = Component(aux)
                     component_aux[aux].entity += line
 
-                elif flag == 1 and 'end ' in line:
+                elif flag == 1 and ('end ' in line or 'END' in line or 'End' in line):
 
                     component_aux[aux].entity += line
                     flag = 0
 
                 elif flag == 1:
+                    if ('generic' in line) or ('Generic' in line) or ('GENERIC' in line):
+                        flag2 = 1
+                        if ':' in line:
+                            component_aux[aux].generic_ports.append(get_genport(line))
+
+                    elif flag2 == 1:
+
+                        component_aux[aux].generic_ports.append(get_genport(line))
+                    elif flag2 == 0:
+                        if ':' in line:
+                            port = get_port(line)
+
+                            if port[0] == 'PORT':
+                                port = port[1::]
+                            if 'IN' in port:
+                                if len(port) == 3:
+                                    component_aux[aux].in_ports.append((port[0], port[2]))
+
+                            elif 'OUT' in port:
+                                if len(port) == 3:
+                                    component_aux[aux].out_ports.append((port[0], port[2]))
+
+                    if ')' in line and flag2 == 1:
+                        flag2 = 0
+
+
+
+
+
                     component_aux[aux].entity += line
 
 
+    for i in component_aux.keys():
+        if '' in component_aux[i].generic_ports:
+            component_aux[i].generic_ports = component_aux[i].generic_ports[:-1]
+        print(i,'-->',component_aux[i].in_ports)
+        print(i,'-->',component_aux[i].out_ports)
 
-            print(component_aux[aux].entity)
 
 
 

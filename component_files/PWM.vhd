@@ -35,10 +35,13 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity PWM is
-    generic( dutyCicle: std_logic := '0');
+    generic( dutyCicle: std_logic := '0'
+             dutyCicle: std_logic := '0'
+    );
     Port ( clk : in STD_LOGIC;
            rst : in STD_LOGIC;
-           pwm : out STD_LOGIC);
+           pwm : out STD_LOGIC
+           );
 end PWM;
 
 architecture Behavioral of PWM is
