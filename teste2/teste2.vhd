@@ -20,28 +20,28 @@ component addsub8 is
            Y : out STD_LOGIC_VECTOR (7 downto 0));
 end component;
 
-signal sY_to_A652 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-constant const_op941 : std_logic:='0';
-signal sY_to_out520 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-constant const_op867 : std_logic:='1';
+signal sY_to_A599 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+constant const_op708 : std_logic:='0';
+signal sY_to_out799 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+constant const_op898 : std_logic:='1';
 
 begin
 
 add1: addsub8
   port map(
-     A=>A;
-     B=>B;
-     OP=>sconst_to_op322;
-     Y=>sY_to_A652);
+     A=>A,
+     B=>B,
+     OP=>sconst_to_op623,
+     Y=>sY_to_A599);
 
 sub1: addsub8
   port map(
-     A=>sY_to_A652;
-     B=>C;
-     OP=>sconst_to_op515;
-     Y=>sY_to_out520);
+     A=>sY_to_A599,
+     B=>C,
+     OP=>sconst_to_op260,
+     Y=>sY_to_out799);
 
 
-Z<=sY_to_out520;
+Z<=sY_to_out799;
 
 end behavioral;

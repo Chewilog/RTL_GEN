@@ -8,7 +8,7 @@ import random
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
+# problemas com as constantes
 
 
 
@@ -262,7 +262,7 @@ def generate(file2open, output_name):
                 if 'in' in aux or 'out' in aux:
                     is_signal = 0
 
-                signals[dict_child['id']] = InOut('s'+aux[0].replace('$', 'const')+'_to_'+aux[1]+str(random.randint(1,1000)), (aux, dict_child['source'],dict_child['target']), is_signal)
+                signals[dict_child['id']] = InOut('s'+aux[0].replace('$', 'const')+'_to_'+aux[1]+str(random.randint(100,1000)), (aux, dict_child['source'],dict_child['target']), is_signal)
 
             elif 'shape=mxgraph.electrical.abstract.dac' in dict_child['style'] or 'shape=mxgraph.electrical.abstract.delta' in dict_child['style']:
                 if 'shape=mxgraph.electrical.abstract.dac' in dict_child['style']:
@@ -355,7 +355,7 @@ def generate(file2open, output_name):
         elif signals[aux_signals[i][0][0]].port[0][0] == '$':
 
             #  nome da constante sera                                        essa string
-            constants[signals[aux_signals[i][0][0]].port[1]][2]+='const_'+ signals[aux_signals[i][0][0]].port[0][1] + str(random.randint(0,1000))
+            constants[signals[aux_signals[i][0][0]].port[1]][2]+='const_'+ signals[aux_signals[i][0][0]].port[0][1] + str(random.randint(100,1000))
             signals[aux_signals[i][0][0]].type = constants[signals[aux_signals[i][0][0]].port[1]][1]
             entity += 'constant '+constants[signals[aux_signals[i][0][0]].port[1]][2]+' : ' + constants[signals[aux_signals[i][0][0]].port[1]][1] + ':=' +constants[signals[aux_signals[i][0][0]].port[1]][0] +';\n'
 
@@ -369,7 +369,7 @@ def generate(file2open, output_name):
         for i in aux_signals.keys():
             if len(aux_signals[i]) != 1:
                 for j in aux_signals[i]:
-                    if len(signals[j[0]].type)>len(signals[aux_signals[i][0][0]].type):
+                    if len(signals[j[0]].type) > len(signals[aux_signals[i][0][0]].type):
                         signals[aux_signals[i][0][0]].type = signals[j[0]].type
                     else:
                         signals[j[0]].type = signals[aux_signals[i][0][0]].type  # talvez funcione mas ficar de olho
