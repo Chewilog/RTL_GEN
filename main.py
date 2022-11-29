@@ -4,16 +4,19 @@ import xml.etree.ElementTree as ET
 import sys
 import os
 import pickle
+import random
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 
+
+
 class InOut:
-    def __init__(self, name, port, var_type, is_signal):
+    def __init__(self, name, port, is_signal):
         self.name = name
         self.port = port
-        self.type = var_type  # talvez nao seja necessario
+        self.type = ''  # talvez nao seja necessario
         self.is_signal = is_signal
 
 
@@ -21,10 +24,61 @@ class Component:
     def __init__(self, name):
         self.name = name
         self.entity = ''
-        self.in_ports = []
-        self.out_ports = []
+        self.in_ports = {}
+        self.out_ports = {}
         self.generic_ports = []
+        self.input_signals = []
+        self.output_signals = []
 
+def convert_signal(type0, type1, val):
+    type0=type0.upper().split('(')[0]
+    type1=type1.upper().split('(')[0]
+
+
+
+
+    vals = (type0,type1)
+
+    if type0.upper() == type1.upper():
+        return val
+    else:
+        print(val)
+    match vals:
+        case ('STD_LOGIC_VECTOR', 'UNSIGNED'):
+            return f'unsigned({val})'
+
+        case ('STD_LOGIC_VECTOR', 'SIGNED'):
+            return f'signed({val})'
+
+        case ('STD_LOGIC_VECTOR', 'INTEGER'):
+            return f'to_integer(unsigned({val}))'
+
+        case ('UNSIGNED', 'STD_LOGIC_VECTOR'):
+            return f'std_logic_vector({val})'
+
+        case ('UNSIGNED', 'SIGNED'):
+            return f'signed({val})'
+
+        case ('UNSIGNED', 'INTEGER'):
+            return f'to_integer({val})'
+
+        case ('SIGNED', 'STD_LOGIC_VECTOR'):
+            return f'std_logic_vector({val})'
+
+        case ('SIGNED', 'INTEGER'):
+            return f'to_integer({val})'
+
+        case ('SIGNED', 'UNSIGNED'):
+            return f'unsigned({val})'
+
+        case ('INTEGER', 'UNSIGNED'):
+            return f'to_unsigned({val},1)'
+
+        case ('INTEGER', 'SIGNED'):
+            return f'to_signed({val},1)'
+
+        case ('INTEGER', 'STD_LOGIC_VECTOR'):
+            return f'std_logic_vector(to_unsigned({val},1))'
 
 def get_genport(line):
 
@@ -46,7 +100,8 @@ def get_genport(line):
 
     for i in range(len(line2)):
         if line2[i] == '=':
-            return line2[i-1]
+
+            return (line2[i-2], line2[i-1])
     return ''
 
 def get_port(line):
@@ -64,7 +119,9 @@ def get_port(line):
         if not (line2[i] == ''):
             aux.append(line2[i])
 
+
     line2 = aux
+
     return line2
 
     # for i in range(len(line2)):
@@ -75,8 +132,9 @@ def get_port(line):
 def generate(file2open, output_name):
     # Use a breakpoint in the code line below to debug your script.
 
-    avaiable_components_list = []
     avaiable_components = {}
+    used_components = {}
+    used_transitions = {}
     flag = 0
     flag2 = 0
     component_name=''
@@ -85,21 +143,21 @@ def generate(file2open, output_name):
     #Initializing components
     if not os.path.isdir('component_files'):
         os.mkdir('component_files')
-    if not os.path.isfile('components_list.pckl'):
-        file = open('components_list.pckl', 'wb')
-        pickle.dump(avaiable_components_list, file)
-        file.close()
     if not os.path.isfile('components.pckl'):
         file = open('components.pckl', 'wb')
         pickle.dump(avaiable_components, file)
         file.close()
 
+    # file = open('components.pckl', 'wb')
+    # avaiable_components = pickle.load(file)
+    # file.close()
 
+    #  I still need to end pickle
     file = open('components_list.pckl', 'rb')
     avaiable_components_list = pickle.load(file)
     component_aux = {}
     for name in os.listdir('component_files'):
-        if not(name[:-4] in avaiable_components_list):
+        if not(name[:-4] in list(avaiable_components.keys())):
             file = open('component_files/'+name, 'r')
             aux = ''
 
@@ -136,20 +194,24 @@ def generate(file2open, output_name):
 
                             if port[0] == 'PORT':
                                 port = port[1::]
+
+                            # if aux =='FFT':
+                            #     print(port)
+
+
                             if 'IN' in port:
                                 if len(port) == 3:
-                                    component_aux[aux].in_ports.append((port[0], port[2]))
+                                    component_aux[aux].in_ports[port[0]]= port[2]
+                                else:
+                                    component_aux[aux].in_ports[port[0]] = port[2]+'( '+port[3]+' '+port[4]+' '+port[5]+' )'
 
                             elif 'OUT' in port:
                                 if len(port) == 3:
-                                    component_aux[aux].out_ports.append((port[0], port[2]))
-
+                                    component_aux[aux].out_ports[port[0]] = port[2]
+                                else:
+                                    component_aux[aux].out_ports[port[0]] = port[2]+'( '+port[3]+' '+port[4]+' '+port[5]+' )'
                     if ')' in line and flag2 == 1:
                         flag2 = 0
-
-
-
-
 
                     component_aux[aux].entity += line
 
@@ -157,19 +219,216 @@ def generate(file2open, output_name):
     for i in component_aux.keys():
         if '' in component_aux[i].generic_ports:
             component_aux[i].generic_ports = component_aux[i].generic_ports[:-1]
-        print(i,'-->',component_aux[i].in_ports)
-        print(i,'-->',component_aux[i].out_ports)
+
+    components = {}
+    signals={}
+    inputs = []
+    outputs = []
+    generic = []
+    aux_generic = {}
+    terminals ={}
+    constants = {}
+
+    entity = '''library IEEE;\nuse IEEE.STD_LOGIC_1164.ALL;\nuse IEEE.NUMERIC_STD.ALL;\n\n'''
 
 
-
-
-
-    exit()
     # Read the xml file
     tree = ET.parse(file2open)
     root = tree.getroot()
     for child in root[0]:
-        print(child)
+        dict_child = child.attrib
+        if len(dict_child['id']) > 5:
+            if 'shape=mxgraph.electrical.logic_gates.dual_inline_ic' in dict_child['style']:
+                aux = dict_child['value'].replace('<br>', '')
+
+                aux = aux.split('/')
+                components[dict_child['id']] = (aux[0], aux[1])
+            elif 'endArrow' in dict_child['style'] or 'orthogonalEdgeStyle' in dict_child['style']:
+                aux = dict_child['value']
+                aux = aux.split('/')
+                is_signal=1
+                if 'in' in aux or 'out' in aux:
+                    is_signal = 0
+
+                signals[dict_child['id']] = InOut('s'+aux[0].replace('$', 'const')+'_to_'+aux[1]+str(random.randint(1,1000)), (aux, dict_child['source'],dict_child['target']), is_signal)
+
+            elif 'shape=mxgraph.electrical.abstract.dac' in dict_child['style'] or 'shape=mxgraph.electrical.abstract.delta' in dict_child['style']:
+                if 'shape=mxgraph.electrical.abstract.dac' in dict_child['style']:
+
+                    aux = dict_child['value'].split('/')
+                    terminals[dict_child['id']] = (aux[0], aux[1])
+                    inputs.append((aux[0], aux[1]))
+                else:
+                    aux = dict_child['value'].split('/')
+                    terminals[dict_child['id']] = (aux[0], aux[1])
+                    outputs.append((aux[0], aux[1]))
+            # constants
+            elif 'shape=mxgraph.electrical.miscellaneous.generic_component' in dict_child['style']:
+                aux = dict_child['value'].split('/')
+                constants[dict_child['id']] = [aux[0], aux[1], '']
+
+            elif 'shape=mxgraph.electrical.rot_mech.winding_connection' in dict_child['style']:
+                aux = dict_child['value'].split('/')
+                terminals[dict_child['id']] = (aux[0], aux[1], aux[2])
+                generic.append((aux[0], aux[1], aux[2]))
+
+
+
+    entity += 'entity '+output_name+' is\n'
+
+    # Generic
+
+    if len(generic)>0:
+        entity+='   generic(\n'
+        for i in generic:
+            entity+='   '+i[2]+' : ' + i[1] +' := '+i[0]+';\n'
+    entity = entity[:-2]
+    entity += '   );\n'
+
+
+    entity += '\n   port(\n'
+    # Inputs
+    for i in inputs:
+        entity += '     '+ i[0]+': in '+i[1]+';\n'
+
+    # Outputs
+    for i in outputs:
+        entity += '     '+ i[0]+': out '+i[1]+';\n'
+    entity=entity[:-2]
+    entity+='   );\n'
+
+    entity+='end '+output_name+';\n\n'
+
+    entity+= 'architecture Behavioral of '+output_name+' is\n\n'
+
+    #components
+    already_created = []
+    for i in components.keys():
+
+        if components[i][0] not in already_created:
+            entity_cp = component_aux[components[i][0]].entity
+            start_aux = entity_cp.find('entity')
+            end_aux = entity_cp.find('end')
+            aux_str = entity_cp[start_aux + len('entity'):end_aux]
+            entity += 'component'
+
+            entity += aux_str.replace(components[i][0], components[i][0])
+            entity += 'end component;\n\n'
+            already_created.append(components[i][0])
+
+    #  signals
+    aux_signals={}
+    for key in signals:
+
+
+        if signals[key].port[1] not in aux_signals.keys() :
+            aux_signals[signals[key].port[1]] = []
+            aux_signals[signals[key].port[1]].append((key,signals[key].port[2]))
+        else:
+            aux_signals[signals[key].port[1]].append((key,signals[key].port[2]))
+
+    for i in aux_signals.keys():
+        if len(aux_signals[i]) != 1:
+            for j in aux_signals[i]:
+                signals[j[0]].name = signals[aux_signals[i][0][0]].name # talvez funcione mas ficar de olho
+
+        if not(signals[aux_signals[i][0][0]].port[0][0] == 'in' or signals[aux_signals[i][0][0]].port[0][0] == '$' or signals[aux_signals[i][0][0]].port[0][0] == 'generic'):
+            #  components[signals[aux_signals[i][0][0]].port[1]][0] -> name of component
+            aux_outputports = component_aux[components[signals[aux_signals[i][0][0]].port[1]][0]].out_ports # output ports dict
+            aux_port = signals[aux_signals[i][0][0]].port[0][0]
+            aux_type = aux_outputports[aux_port.upper()]
+            signals[aux_signals[i][0][0]].type = aux_type
+            entity += 'signal ' + signals[aux_signals[i][0][0]].name + ' :' + aux_type + ';\n'
+
+        elif signals[aux_signals[i][0][0]].port[0][0] == '$':
+
+            #  nome da constante sera                                        essa string
+            constants[signals[aux_signals[i][0][0]].port[1]][2]+='const_'+ signals[aux_signals[i][0][0]].port[0][1] + str(random.randint(0,1000))
+            signals[aux_signals[i][0][0]].type = constants[signals[aux_signals[i][0][0]].port[1]][1]
+            entity += 'constant '+constants[signals[aux_signals[i][0][0]].port[1]][2]+' : ' + constants[signals[aux_signals[i][0][0]].port[1]][1] + ':=' +constants[signals[aux_signals[i][0][0]].port[1]][0] +';\n'
+
+        elif signals[aux_signals[i][0][0]].port[0][0] == 'generic':
+            generic_port_name = terminals[signals[aux_signals[i][0][0]].port[1]]
+            signals[aux_signals[i][0][0]].name = generic_port_name[2]
+
+        elif signals[aux_signals[i][0][0]].port[0][0] == 'in':
+            signals[aux_signals[i][0][0]].type = terminals[signals[aux_signals[i][0][0]].port[1]][1]
+
+        for i in aux_signals.keys():
+            if len(aux_signals[i]) != 1:
+                for j in aux_signals[i]:
+                    if len(signals[j[0]].type)>len(signals[aux_signals[i][0][0]].type):
+                        signals[aux_signals[i][0][0]].type = signals[j[0]].type
+                    else:
+                        signals[j[0]].type = signals[aux_signals[i][0][0]].type  # talvez funcione mas ficar de olho
+
+    #  begin architecture
+    entity+='\nbegin\n\n'
+
+    #instanciation
+
+    #  organize circuit's generic input
+    # aux_generic = {}
+    # if len(generic)>0:
+    #     for i in generic:
+    #         aux_generic[i[2]] = (i[1],i[0])
+
+
+    for key in components.keys():
+
+        #  organize input/output/generic
+        component_outputs = {}
+        component_inputs = {}
+        generic_inputs = {}
+        for i in signals.keys():
+            if signals[i].port[1] == key:
+
+                component_outputs[signals[i].port[0][0].upper()]=(signals[i].name,signals[i].type)
+            elif signals[i].port[2] == key:
+                if signals[i].is_signal: # precisa testar mais casos genericos
+                    if signals[i].port[0][0]=='generic':
+                        generic_inputs[signals[i].port[0][1]] = signals[i].name
+                    else:
+                        component_inputs[signals[i].port[0][1].upper()] = (signals[i].name,signals[i].type)
+                else:
+                    component_inputs[signals[i].port[0][1].upper()] = (terminals[signals[i].port[1]][0],terminals[signals[i].port[1]][1])
+
+        entity += components[key][1] + ': ' + components[key][0]
+        if len(generic_inputs.keys()) > 0:
+            entity += '\n  generic map(\n'
+
+
+            aux = {}
+            for i in generic:
+                aux[i[2]] = (i[0],i[1])
+
+            aux2 = {}
+            for i in component_aux[components[key][0]].generic_ports:
+                aux2[i[0]]=i[1]
+
+
+            for item in generic_inputs.keys():
+                if generic_inputs[item] in aux.keys():
+                                                # converte do type0 para type1
+                    entity+= '    '+item+' => '+convert_signal(aux[generic_inputs[item]][1], aux2[item], generic_inputs[item])+';\n'
+
+            entity=entity[:-2]+');\n'
+
+        entity+= '\n  port map(\n'
+
+
+
+        for i in component_aux[components[key][0]].in_ports.keys():
+
+                entity += '     '+i+'=>' + convert_signal(component_inputs[i][1], component_aux[components[key][0]].in_ports[i], component_inputs[i][0]) + ';\n'
+
+        for i in component_aux[components[key][0]].out_ports.keys():
+
+                entity += '     '+i+'=>' + convert_signal(component_outputs[i][1], component_aux[components[key][0]].out_ports[i], component_outputs[i][0]) + ';\n'
+
+    entity += 'end behavioral;'
+    print(entity)
+
 
 
 # Press the green button in the gutter to run the script.
