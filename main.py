@@ -42,42 +42,54 @@ def convert_signal(type0, type1, val):
     if type0.upper() == type1.upper():
         return val
     else:
-        print(val)
+        print('Signal type does not match in', val)
     match vals:
         case ('STD_LOGIC_VECTOR', 'UNSIGNED'):
+            print(val, '-> has been transformed from ',type0,'to', type1 )
             return f'unsigned({val})'
 
         case ('STD_LOGIC_VECTOR', 'SIGNED'):
+            print(val, '-> has been transformed from ', type0, 'to', type1)
             return f'signed({val})'
 
         case ('STD_LOGIC_VECTOR', 'INTEGER'):
+            print(val, '-> has been transformed from ', type0, 'to', type1)
             return f'to_integer(unsigned({val}))'
 
         case ('UNSIGNED', 'STD_LOGIC_VECTOR'):
+            print(val, '-> has been transformed from ', type0, 'to', type1)
             return f'std_logic_vector({val})'
 
         case ('UNSIGNED', 'SIGNED'):
+            print(val, '-> has been transformed from ', type0, 'to', type1)
             return f'signed({val})'
 
         case ('UNSIGNED', 'INTEGER'):
+            print(val, '-> has been transformed from ', type0, 'to', type1)
             return f'to_integer({val})'
 
         case ('SIGNED', 'STD_LOGIC_VECTOR'):
+            print(val, '-> has been transformed from ', type0, 'to', type1)
             return f'std_logic_vector({val})'
 
         case ('SIGNED', 'INTEGER'):
+            print(val, '-> has been transformed from ', type0, 'to', type1)
             return f'to_integer({val})'
 
         case ('SIGNED', 'UNSIGNED'):
+            print(val, '-> has been transformed from ', type0, 'to', type1)
             return f'unsigned({val})'
 
         case ('INTEGER', 'UNSIGNED'):
+            print(val, '-> has been transformed from ', type0, 'to', type1)
             return f'to_unsigned({val},1)'
 
         case ('INTEGER', 'SIGNED'):
+            print(val, '-> has been transformed from ', type0, 'to', type1)
             return f'to_signed({val},1)'
 
         case ('INTEGER', 'STD_LOGIC_VECTOR'):
+            print(val, '-> has been transformed from ', type0, 'to', type1)
             return f'std_logic_vector(to_unsigned({val},1))'
 
 def get_genport(line):
@@ -282,8 +294,8 @@ def generate(file2open, output_name):
         entity+='   generic(\n'
         for i in generic:
             entity+='   '+i[2]+' : ' + i[1] +' := '+i[0]+';\n'
-    entity = entity[:-2]
-    entity += '   );\n'
+        entity = entity[:-2]
+        entity += '   );\n'
 
 
     entity += '\n   port(\n'
@@ -426,13 +438,42 @@ def generate(file2open, output_name):
 
                 entity += '     '+i+'=>' + convert_signal(component_outputs[i][1], component_aux[components[key][0]].out_ports[i], component_outputs[i][0]) + ';\n'
 
-    entity += 'end behavioral;'
-    print(entity)
+        entity = entity[:-2] + ');\n\n'
 
+    #  connect outputs
+
+    entity+='\n';
+    for i in signals.keys():
+        if signals[i].port[0][1]=='out':
+            entity += terminals[signals[i].port[2]][0] + '<=' +signals[i].name+';\n'
+
+
+
+    entity += '\nend behavioral;'
+    if not os.path.isdir(output_name):
+        os.mkdir(output_name)
+
+    used_components = []
+    for i in components.keys():
+        if components[i][0] not in used_components:
+            used_components.append(components[i][0])
+
+    for comp in used_components:
+
+        file = open('component_files/'+comp+'.vhd','r')
+        file2 = open(output_name+'/'+comp+'.vhd', 'w')
+        file2.write(file.read())
+        file.close()
+        file2.close()
+
+
+    file = open(output_name+'/'+output_name+'.vhd', 'w')
+    file.write(entity)
+    file.close()
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    generate('teste.xml', 'teste')
+    generate('teste.xml', 'teste2')
 
 
