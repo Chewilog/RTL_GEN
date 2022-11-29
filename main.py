@@ -422,7 +422,7 @@ def generate(file2open, output_name):
             for item in generic_inputs.keys():
                 if generic_inputs[item] in aux.keys():
                                                 # converte do type0 para type1
-                    entity+= '    '+item+' => '+convert_signal(aux[generic_inputs[item]][1], aux2[item], generic_inputs[item])+';\n'
+                    entity+= '    '+item+' => '+convert_signal(aux[generic_inputs[item]][1], aux2[item], generic_inputs[item])+',\n'
 
             entity=entity[:-2]+');\n'
 
@@ -432,11 +432,11 @@ def generate(file2open, output_name):
 
         for i in component_aux[components[key][0]].in_ports.keys():
 
-                entity += '     '+i+'=>' + convert_signal(component_inputs[i][1], component_aux[components[key][0]].in_ports[i], component_inputs[i][0]) + ';\n'
+                entity += '     '+i+'=>' + convert_signal(component_inputs[i][1], component_aux[components[key][0]].in_ports[i], component_inputs[i][0]) + ',\n'
 
         for i in component_aux[components[key][0]].out_ports.keys():
 
-                entity += '     '+i+'=>' + convert_signal(component_outputs[i][1], component_aux[components[key][0]].out_ports[i], component_outputs[i][0]) + ';\n'
+                entity += '     '+i+'=>' + convert_signal(component_outputs[i][1], component_aux[components[key][0]].out_ports[i], component_outputs[i][0]) + ',\n'
 
         entity = entity[:-2] + ');\n\n'
 
@@ -460,7 +460,7 @@ def generate(file2open, output_name):
 
     for comp in used_components:
 
-        file = open('component_files/'+comp+'.vhd','r')
+        file = open('component_files/'+comp+'.vhd', 'r')
         file2 = open(output_name+'/'+comp+'.vhd', 'w')
         file2.write(file.read())
         file.close()
