@@ -141,7 +141,7 @@ def get_port(line):
     #         return line2[i - 1]
     # return ''
 
-def generate(file2open, output_name):
+def generate(file2open, output_name, add_component='n'):
     # Use a breakpoint in the code line below to debug your script.
 
     avaiable_components = {}
@@ -247,6 +247,7 @@ def generate(file2open, output_name):
     # Read the xml file
     tree = ET.parse(file2open)
     root = tree.getroot()
+    cnt=0
     for child in root[0]:
         dict_child = child.attrib
         if len(dict_child['id']) > 5:
@@ -254,15 +255,19 @@ def generate(file2open, output_name):
                 aux = dict_child['value'].replace('<br>', '')
 
                 aux = aux.split('/')
+                print(aux)
                 components[dict_child['id']] = (aux[0], aux[1])
             elif 'endArrow' in dict_child['style'] or 'orthogonalEdgeStyle' in dict_child['style']:
+
                 aux = dict_child['value']
+
+
                 aux = aux.split('/')
                 is_signal=1
                 if 'in' in aux or 'out' in aux:
                     is_signal = 0
 
-                signals[dict_child['id']] = InOut('s'+aux[0].replace('$', 'const')+'_to_'+aux[1]+str(random.randint(100,1000)), (aux, dict_child['source'],dict_child['target']), is_signal)
+                signals[dict_child['id']] = InOut('s'+aux[0].replace('$', 'const')+'_to_'+aux[1]+str(random.randint(100,1000))+str(cnt), (aux, dict_child['source'],dict_child['target']), is_signal)
 
             elif 'shape=mxgraph.electrical.abstract.dac' in dict_child['style'] or 'shape=mxgraph.electrical.abstract.delta' in dict_child['style']:
                 if 'shape=mxgraph.electrical.abstract.dac' in dict_child['style']:
@@ -283,7 +288,7 @@ def generate(file2open, output_name):
                 aux = dict_child['value'].split('/')
                 terminals[dict_child['id']] = (aux[0], aux[1], aux[2])
                 generic.append((aux[0], aux[1], aux[2]))
-
+            cnt+=1
 
 
     entity += 'entity '+output_name+' is\n'
@@ -330,6 +335,7 @@ def generate(file2open, output_name):
 
     #  signals
     aux_signals={}
+    cnt=0
     for key in signals:
 
 
@@ -355,7 +361,7 @@ def generate(file2open, output_name):
         elif signals[aux_signals[i][0][0]].port[0][0] == '$':
 
             #  nome da constante sera                                        essa string
-            constants[signals[aux_signals[i][0][0]].port[1]][2]+='const_'+ signals[aux_signals[i][0][0]].port[0][1] + str(random.randint(100,1000))
+            constants[signals[aux_signals[i][0][0]].port[1]][2]= signals[aux_signals[i][0][0]].name
             signals[aux_signals[i][0][0]].type = constants[signals[aux_signals[i][0][0]].port[1]][1]
             entity += 'constant '+constants[signals[aux_signals[i][0][0]].port[1]][2]+' : ' + constants[signals[aux_signals[i][0][0]].port[1]][1] + ':=' +constants[signals[aux_signals[i][0][0]].port[1]][0] +';\n'
 
@@ -373,7 +379,7 @@ def generate(file2open, output_name):
                         signals[aux_signals[i][0][0]].type = signals[j[0]].type
                     else:
                         signals[j[0]].type = signals[aux_signals[i][0][0]].type  # talvez funcione mas ficar de olho
-
+        cnt+=1
     #  begin architecture
     entity+='\nbegin\n\n'
 
@@ -471,9 +477,14 @@ def generate(file2open, output_name):
     file.write(entity)
     file.close()
 
+    # add to library
+    if add_component.upper() == 'Y':
+        file = open('component_files/'+output_name+'.vhd', 'w')
+        file.write(entity)
+        file.close()
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    generate('teste.xml', 'teste2')
+    generate('teste.xml', 'teste2', 'N')
 
 
