@@ -273,10 +273,12 @@ def generate(file2open, output_name, add_component='n'):
                 if 'shape=mxgraph.electrical.abstract.dac' in dict_child['style']:
 
                     aux = dict_child['value'].split('/')
+                    #aux = aux.replace('&nbsp;',' ')
                     terminals[dict_child['id']] = (aux[0], aux[1])
                     inputs.append((aux[0], aux[1]))
                 else:
                     aux = dict_child['value'].split('/')
+                    #aux = aux.replace('&nbsp;', ' ')
                     terminals[dict_child['id']] = (aux[0], aux[1])
                     outputs.append((aux[0], aux[1]))
             # constants
