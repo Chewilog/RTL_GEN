@@ -253,12 +253,13 @@ def generate(file2open, output_name, add_component='n'):
         if len(dict_child['id']) > 5:
             if 'shape=mxgraph.electrical.logic_gates.dual_inline_ic' in dict_child['style']:
                 aux = dict_child['value'].replace('<br>', '')
-
                 aux = aux.split('/')
-                print(aux)
                 components[dict_child['id']] = (aux[0], aux[1])
             elif 'endArrow' in dict_child['style'] or 'orthogonalEdgeStyle' in dict_child['style']:
-
+                if not dict_child.get('value'):
+                    a = dict_child['id']
+                    print(f'The signal {a} does not have a "from/to" value.')
+                    exit()
                 aux = dict_child['value']
 
 
@@ -336,16 +337,16 @@ def generate(file2open, output_name, add_component='n'):
             already_created.append(components[i][0])
 
     #  signals
-    aux_signals={}
-    cnt=0
+    aux_signals = {}
+    cnt = 0
     for key in signals:
 
 
         if signals[key].port[1] not in aux_signals.keys() :
             aux_signals[signals[key].port[1]] = []
-            aux_signals[signals[key].port[1]].append((key,signals[key].port[2]))
+            aux_signals[signals[key].port[1]].append((key, signals[key].port[2]))
         else:
-            aux_signals[signals[key].port[1]].append((key,signals[key].port[2]))
+            aux_signals[signals[key].port[1]].append((key, signals[key].port[2]))
 
     for i in aux_signals.keys():
         if len(aux_signals[i]) != 1:
@@ -354,7 +355,7 @@ def generate(file2open, output_name, add_component='n'):
 
         if not(signals[aux_signals[i][0][0]].port[0][0] == 'in' or signals[aux_signals[i][0][0]].port[0][0] == '$' or signals[aux_signals[i][0][0]].port[0][0] == 'generic'):
             #  components[signals[aux_signals[i][0][0]].port[1]][0] -> name of component
-            aux_outputports = component_aux[components[signals[aux_signals[i][0][0]].port[1]][0]].out_ports # output ports dict
+            aux_outputports = component_aux[components[signals[aux_signals[i][0][0]].port[1]][0]].out_ports #  output ports dict
             aux_port = signals[aux_signals[i][0][0]].port[0][0]
             aux_type = aux_outputports[aux_port.upper()]
             signals[aux_signals[i][0][0]].type = aux_type

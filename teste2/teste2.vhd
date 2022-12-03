@@ -39,11 +39,11 @@ component addsub8 is
            Y : out STD_LOGIC_VECTOR (7 downto 0));
 end component;
 
-signal sY_to_B2120 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-signal scmpout_to_out2203 :STD_LOGIC;
-signal sY_to_X6595 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-constant sconst_to_op74619 : std_logic_vector(2 downto 0):="010";
-constant sconst_to_op73921 : std_logic:='0';
+signal sY_to_B3420 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+signal scmpout_to_out5033 :STD_LOGIC;
+signal sY_to_X3335 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+constant sconst_to_op55419 : std_logic_vector(2 downto 0):="010";
+constant sconst_to_op28021 : std_logic:='0';
 
 begin
 
@@ -53,24 +53,24 @@ tot: reg8
      RST=>rst,
      CLR=>tot_clr,
      LD=>tot_ld,
-     X=>sY_to_X6595,
-     Y=>sY_to_B2120);
+     X=>sY_to_X3335,
+     Y=>sY_to_B3420);
 
 cmp0: Comparator
   port map(
-     A=>to_integer(unsigned(sY_to_B2120)),
+     A=>to_integer(unsigned(sY_to_B3420)),
      B=>to_integer(unsigned(s)),
-     OP=>sconst_to_op74619,
-     CMPOUT=>scmpout_to_out2203);
+     OP=>sconst_to_op55419,
+     CMPOUT=>scmpout_to_out5033);
 
 adder0: addsub8
   port map(
      A=>a,
-     B=>sY_to_B2120,
-     OP=>sconst_to_op73921,
-     Y=>sY_to_X6595);
+     B=>sY_to_B3420,
+     OP=>sconst_to_op28021,
+     Y=>sY_to_X3335);
 
 
-tot_lt_s<=scmpout_to_out2203;
+tot_lt_s<=scmpout_to_out5033;
 
 end behavioral;
