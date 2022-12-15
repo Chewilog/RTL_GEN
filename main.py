@@ -5,11 +5,11 @@ import sys
 import os
 import pickle
 import random
+from generator_files.General_generator_file import General_generator
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 # problemas com as constantes
-
 
 
 class InOut:
@@ -145,6 +145,7 @@ def generate(file2open, output_name, add_component='n'):
     # Use a breakpoint in the code line below to debug your script.
 
     avaiable_components = {}
+    generators = {}
     used_components = {}
     used_transitions = {}
     flag = 0
@@ -227,6 +228,11 @@ def generate(file2open, output_name, add_component='n'):
 
                     component_aux[aux].entity += line
 
+    a = General_generator()
+
+    print(getattr(a,'adder_gen')())
+
+    exit()
 
     for i in component_aux.keys():
         if '' in component_aux[i].generic_ports:
@@ -241,6 +247,7 @@ def generate(file2open, output_name, add_component='n'):
     terminals ={}
     constants = {}
 
+    generators_in_diagram = {}
     entity = '''library IEEE;\nuse IEEE.STD_LOGIC_1164.ALL;\nuse IEEE.NUMERIC_STD.ALL;\n\n'''
 
 
@@ -291,6 +298,10 @@ def generate(file2open, output_name, add_component='n'):
                 aux = dict_child['value'].split('/')
                 terminals[dict_child['id']] = (aux[0], aux[1], aux[2])
                 generic.append((aux[0], aux[1], aux[2]))
+
+            elif 'whiteSpace=wrap' in dict_child['style']:
+                generators_in_diagram[dict_child['id']] = dict_child['value']
+
             cnt+=1
 
 
