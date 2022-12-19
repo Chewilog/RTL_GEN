@@ -1,23 +1,13 @@
+from adder_gen import AdderGenClass
+
 
 #getattr(o, name)()
-class General_generator():
+class GeneralGenerator:
+    def __init__(self):
+        self.adder_gen_class = AdderGenClass()
 
-    def adder_gen(N_of_bits='8', carry='0', inputs=['a','b','c','d'],outputs=['c']):#N_of_bits-> adder number of bits; carry-> 0=not carry, 1=carry; register-> 0=do not register, 1=register output
-        entity = ''
-        entity+='process('
-        for i in inputs:
-            entity+=i+','
-
-        for i in outputs:
-            entity += i +','
-        entity = entity[:-1] + ')\n'
-        entity+='begin\n'
-        entity += '   ' + outputs[0] + '<= '
-        for i in inputs:
-            entity+= 'unsigned('+i+')'+'+'
-
-        entity = entity[:-1] +';'
-
-        entity+='\nend process;\n'
-        return entity
+    def adder_gen(self, parameters=['8', '0'], inputs={'a':'signal1', 'b':'signal2'}, outputs={'c':'signal3'}, showconfig=0):
+        if showconfig:
+            return (self.adder_gen_class.input_ports, self.adder_gen_class.output_ports)
+        return self.adder_gen_class.adder_gen(parameters, inputs, outputs)
 

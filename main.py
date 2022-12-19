@@ -1,11 +1,11 @@
 # This is a sample Python script.
-import copy
 import xml.etree.ElementTree as ET
-import sys
 import os
 import pickle
 import random
-from generator_files.General_generator_file import General_generator
+from generator_files.General_generator_file import GeneralGenerator
+from generator_files import *
+
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
@@ -174,7 +174,7 @@ def generate(file2open, output_name, add_component='n'):
             file = open('component_files/'+name, 'r')
             aux = ''
 
-
+            #load the components from library
             for line in file.readlines():
                 if 'entity' in line:
                     flag = 1
@@ -228,11 +228,11 @@ def generate(file2open, output_name, add_component='n'):
 
                     component_aux[aux].entity += line
 
-    a = General_generator()
-
-    print(getattr(a,'adder_gen')())
-
-    exit()
+    # a = General_generator()
+    #
+    # print(getattr(a,'adder_gen')())
+    #
+    # exit()
 
     for i in component_aux.keys():
         if '' in component_aux[i].generic_ports:
@@ -248,6 +248,9 @@ def generate(file2open, output_name, add_component='n'):
     constants = {}
 
     generators_in_diagram = {}
+    general_generator_class = GeneralGenerator()
+
+
     entity = '''library IEEE;\nuse IEEE.STD_LOGIC_1164.ALL;\nuse IEEE.NUMERIC_STD.ALL;\n\n'''
 
 
@@ -262,6 +265,8 @@ def generate(file2open, output_name, add_component='n'):
                 aux = dict_child['value'].replace('<br>', '')
                 aux = aux.split('/')
                 components[dict_child['id']] = (aux[0], aux[1])
+
+            #signals detection
             elif 'endArrow' in dict_child['style'] or 'orthogonalEdgeStyle' in dict_child['style']:
                 if not dict_child.get('value'):
                     a = dict_child['id']
@@ -300,7 +305,10 @@ def generate(file2open, output_name, add_component='n'):
                 generic.append((aux[0], aux[1], aux[2]))
 
             elif 'whiteSpace=wrap' in dict_child['style']:
-                generators_in_diagram[dict_child['id']] = dict_child['value']
+                if len(dict_child['value'].split('/'))>1:
+                    generators_in_diagram[dict_child['id']] = (dict_child['value'].split('/')[0], dict_child['value'].split('/')[1:],{},{})
+                else:
+                    generators_in_diagram[dict_child['id']] = (dict_child['value'].split('/')[0], [], [], [])
 
             cnt+=1
 
@@ -312,7 +320,7 @@ def generate(file2open, output_name, add_component='n'):
     if len(generic)>0:
         entity+='   generic(\n'
         for i in generic:
-            entity+='   '+i[2]+' : ' + i[1] +' := '+i[0]+';\n'
+            entity+='   '+i[2]+' : ' + i[1] + ' := ' + i[0] + ';\n'
         entity = entity[:-2]
         entity += '   );\n'
 
@@ -366,6 +374,12 @@ def generate(file2open, output_name, add_component='n'):
 
         if not(signals[aux_signals[i][0][0]].port[0][0] == 'in' or signals[aux_signals[i][0][0]].port[0][0] == '$' or signals[aux_signals[i][0][0]].port[0][0] == 'generic'):
             #  components[signals[aux_signals[i][0][0]].port[1]][0] -> name of component
+            if i in generators_in_diagram.keys():# adicionar o nome da classe la em cima
+                # getattr(general_generator_class,)
+                generator_inout = general_generator_class.adder_gen(showconfig=1)
+                print(generator_inout)
+                exit()
+                continue
             aux_outputports = component_aux[components[signals[aux_signals[i][0][0]].port[1]][0]].out_ports #  output ports dict
             aux_port = signals[aux_signals[i][0][0]].port[0][0]
             aux_type = aux_outputports[aux_port.upper()]
@@ -386,13 +400,13 @@ def generate(file2open, output_name, add_component='n'):
         elif signals[aux_signals[i][0][0]].port[0][0] == 'in':
             signals[aux_signals[i][0][0]].type = terminals[signals[aux_signals[i][0][0]].port[1]][1]
 
-        for i in aux_signals.keys():
-            if len(aux_signals[i]) != 1:
-                for j in aux_signals[i]:
-                    if len(signals[j[0]].type) > len(signals[aux_signals[i][0][0]].type):
-                        signals[aux_signals[i][0][0]].type = signals[j[0]].type
+        for k in aux_signals.keys():
+            if len(aux_signals[k]) != 1:
+                for j in aux_signals[k]:
+                    if len(signals[j[0]].type) > len(signals[aux_signals[k][0][0]].type):
+                        signals[aux_signals[k][0][0]].type = signals[j[0]].type
                     else:
-                        signals[j[0]].type = signals[aux_signals[i][0][0]].type  # talvez funcione mas ficar de olho
+                        signals[j[0]].type = signals[aux_signals[k][0][0]].type  # talvez funcione mas ficar de olho
         cnt+=1
     #  begin architecture
     entity+='\nbegin\n\n'

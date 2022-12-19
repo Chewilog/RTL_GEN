@@ -5,32 +5,14 @@ use IEEE.NUMERIC_STD.ALL;
 entity teste2 is
 
    port(
-     tot_ld: in std_logic;
-     tot_clr: in std_logic;
-     clk: in std_logic;
-     a: in std_logic_vector(7 downto 0);
-     s: in std_logic_vector(7 downto 0);
-     rst: in std_logic;
-     tot_lt_s: out std_logic   );
+     A: in std_logic_vector(7 downto 0);
+     B: in std_logic_vector(7 downto 0);
+     C: in std_logic_vector(7 downto 0);
+     Z: out std_logic_vector(7 downto 0);
+     Z: out std_logic_vector(7 downto 0)   );
 end teste2;
 
 architecture Behavioral of teste2 is
-
-component reg8 is
-    Port ( clk : in STD_LOGIC;
-           rst : in STD_LOGIC;
-           clr : in STD_LOGIC;
-           ld : in STD_LOGIC;
-           X : in STD_LOGIC_VECTOR(7 DOWNTO 0);
-           Y : out STD_LOGIC_VECTOR(7 DOWNTO 0));
-end component;
-
-component Comparator is
-    Port ( a : in integer;
-           b : in integer;
-           op : in STD_LOGIC_VECTOR(2 downto 0);
-           cmpout : out STD_LOGIC);
-end component;
 
 component addsub8 is
     Port ( A : in STD_LOGIC_VECTOR (7 downto 0);
@@ -39,38 +21,29 @@ component addsub8 is
            Y : out STD_LOGIC_VECTOR (7 downto 0));
 end component;
 
-signal sY_to_B3420 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-signal scmpout_to_out5033 :STD_LOGIC;
-signal sY_to_X3335 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-constant sconst_to_op55419 : std_logic_vector(2 downto 0):="010";
-constant sconst_to_op28021 : std_logic:='0';
+signal sY_to_A8630 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+constant sconst_to_op62311 : std_logic:='0';
+signal sY_to_out85413 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+constant sconst_to_op56115 : std_logic:='1';
 
 begin
 
-tot: reg8
+add1: addsub8
   port map(
-     CLK=>clk,
-     RST=>rst,
-     CLR=>tot_clr,
-     LD=>tot_ld,
-     X=>sY_to_X3335,
-     Y=>sY_to_B3420);
+     A=>A,
+     B=>B,
+     OP=>sconst_to_op62311,
+     Y=>sY_to_A8630);
 
-cmp0: Comparator
+sub1: addsub8
   port map(
-     A=>to_integer(unsigned(sY_to_B3420)),
-     B=>to_integer(unsigned(s)),
-     OP=>sconst_to_op55419,
-     CMPOUT=>scmpout_to_out5033);
-
-adder0: addsub8
-  port map(
-     A=>a,
-     B=>sY_to_B3420,
-     OP=>sconst_to_op28021,
-     Y=>sY_to_X3335);
+     A=>sY_to_A8630,
+     B=>C,
+     OP=>sconst_to_op56115,
+     Y=>sY_to_out85413);
 
 
-tot_lt_s<=scmpout_to_out5033;
+Z<=sY_to_out85413;
+Z<=sc_to_out18717;
 
 end behavioral;
