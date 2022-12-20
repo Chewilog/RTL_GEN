@@ -328,11 +328,11 @@ def generate(file2open, output_name, add_component='n'):
     entity += '\n   port(\n'
     # Inputs
     for i in inputs:
-        entity += '     '+ i[0]+': in '+i[1]+';\n'
+        entity += '     ' + i[0]+': in '+i[1]+';\n'
 
     # Outputs
     for i in outputs:
-        entity += '     '+ i[0]+': out '+i[1]+';\n'
+        entity += '     ' + i[0]+': out '+i[1]+';\n'
     entity=entity[:-2]
     entity+='   );\n'
 
@@ -374,14 +374,16 @@ def generate(file2open, output_name, add_component='n'):
 
         if not(signals[aux_signals[i][0][0]].port[0][0] == 'in' or signals[aux_signals[i][0][0]].port[0][0] == '$' or signals[aux_signals[i][0][0]].port[0][0] == 'generic'):
             #  components[signals[aux_signals[i][0][0]].port[1]][0] -> name of component
-            if i in generators_in_diagram.keys():# adicionar o nome da classe la em cima
+            if i in generators_in_diagram.keys():
                 # getattr(general_generator_class,)
                 #getattr(o, "adder_gen")(showconfig=1)
                 inout_of_generator = getattr(general_generator_class, generators_in_diagram[i][0])(showconfig=1)
-
-                print(inout_of_generator)
-                exit()
+                signals[aux_signals[i][0][0]].type = inout_of_generator[1][signals[aux_signals[i][0][0]].port[0][0]]
+                aux_type = signals[aux_signals[i][0][0]].type
+                entity += 'signal ' + signals[aux_signals[i][0][0]].name + ' :' + aux_type + ';\n'
+                generators_in_diagram[i][3][signals[aux_signals[i][0][0]].port[0][0]]=  signals[aux_signals[i][0][0]].name
                 continue
+
             aux_outputports = component_aux[components[signals[aux_signals[i][0][0]].port[1]][0]].out_ports #  output ports dict
             aux_port = signals[aux_signals[i][0][0]].port[0][0]
             aux_type = aux_outputports[aux_port.upper()]
@@ -433,6 +435,8 @@ def generate(file2open, output_name, add_component='n'):
 
                 component_outputs[signals[i].port[0][0].upper()]=(signals[i].name,signals[i].type)
             elif signals[i].port[2] == key:
+
+                    # generators_in_diagram[i][2][signals[aux_signals[i][0][0]].port[0][0]]
                 if signals[i].is_signal: # precisa testar mais casos genericos
                     if signals[i].port[0][0]=='generic':
                         generic_inputs[signals[i].port[0][1]] = signals[i].name
@@ -476,14 +480,32 @@ def generate(file2open, output_name, add_component='n'):
 
         entity = entity[:-2] + ');\n\n'
 
-    #  connect outputs
+    for key in generators_in_diagram.keys():
+        for i in signals.keys():
+            if signals[i].port[1] == key:
+                if signals[i].is_signal:
+                    continue
+                else:
+                    generators_in_diagram[key][2][signals[i].port[0][0]] = terminals[ signals[i].port[2]][0]
+            elif signals[i].port[2] == key:
+                if signals[i].is_signal:
+                    generators_in_diagram[key][2][signals[i].port[0][1]]=signals[i].name
+                else:
+                    generators_in_diagram[key][2][signals[i].port[0][1]] = terminals[ signals[i].port[1]][0]
+                    pass
 
-    entity+='\n';
+    entity+='\n\n'
+    for i in generators_in_diagram.keys(): # É preciso arrumar quando for um input
+         entity+=(getattr(general_generator_class,generators_in_diagram[i][0])(generators_in_diagram[i][1],generators_in_diagram[i][2],generators_in_diagram[i][3]))
+
+    #  connect outputs
+    entity+='\n'
     for i in signals.keys():
         if signals[i].port[0][1]=='out':
             entity += terminals[signals[i].port[2]][0] + '<=' +signals[i].name+';\n'
 
 
+    entity += '\n'
 
     entity += '\nend behavioral;'
     if not os.path.isdir(output_name):

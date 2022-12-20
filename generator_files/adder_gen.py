@@ -11,8 +11,8 @@ class AdderGenClass():
 
 
 
-        for i in outputs.values():
-            entity += i +','
+        # for i in outputs.values():
+        #     entity += i +','
         entity = entity[:-1] + ')\n'
         entity+='begin\n'
         entity += '   ' + outputs['c'] + '<= '
