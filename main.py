@@ -505,7 +505,7 @@ def generate(file2open, output_name, add_component='n'):
             entity += terminals[signals[i].port[2]][0] + '<=' +signals[i].name+';\n'
 
 
-    entity += '\n'
+    entity += ' \n'
 
     entity += '\nend behavioral;'
     if not os.path.isdir(output_name):
