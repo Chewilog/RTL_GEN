@@ -1,5 +1,5 @@
-from adder_gen import AdderGenClass
 
+from generator_files.adder_gen import AdderGenClass
 
 #getattr(o, name)()
 class GeneralGenerator:
@@ -11,3 +11,6 @@ class GeneralGenerator:
             return (self.adder_gen_class.input_ports, self.adder_gen_class.output_ports)
         return self.adder_gen_class.adder_gen(parameters, inputs, outputs)
 
+
+o = GeneralGenerator()
+print(getattr(o, "adder_gen")(showconfig=1))

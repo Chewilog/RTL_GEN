@@ -3,8 +3,8 @@ import xml.etree.ElementTree as ET
 import os
 import pickle
 import random
-from generator_files.General_generator_file import GeneralGenerator
-from generator_files import *
+from generator_files.General_generator_file import *
+
 
 
 # Press Shift+F10 to execute it or replace it with your code.
@@ -376,8 +376,10 @@ def generate(file2open, output_name, add_component='n'):
             #  components[signals[aux_signals[i][0][0]].port[1]][0] -> name of component
             if i in generators_in_diagram.keys():# adicionar o nome da classe la em cima
                 # getattr(general_generator_class,)
-                generator_inout = general_generator_class.adder_gen(showconfig=1)
-                print(generator_inout)
+                #getattr(o, "adder_gen")(showconfig=1)
+                inout_of_generator = getattr(general_generator_class, generators_in_diagram[i][0])(showconfig=1)
+
+                print(inout_of_generator)
                 exit()
                 continue
             aux_outputports = component_aux[components[signals[aux_signals[i][0][0]].port[1]][0]].out_ports #  output ports dict
