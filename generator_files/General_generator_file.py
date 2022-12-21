@@ -12,5 +12,3 @@ class GeneralGenerator:
         return self.adder_gen_class.adder_gen(parameters, inputs, outputs)
 
 
-o = GeneralGenerator()
-print(getattr(o, "adder_gen")(showconfig=0))
