@@ -486,7 +486,8 @@ def generate(file2open, output_name, add_component='n'):
                 if signals[i].is_signal:
                     continue
                 else:
-                    generators_in_diagram[key][2][signals[i].port[0][0]] = terminals[ signals[i].port[2]][0]
+                    continue
+                    #generators_in_diagram[key][2][signals[i].port[0][0]] = terminals[ signals[i].port[2]][0]
             elif signals[i].port[2] == key:
                 if signals[i].is_signal:
                     generators_in_diagram[key][2][signals[i].port[0][1]]=signals[i].name

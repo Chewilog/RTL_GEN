@@ -13,4 +13,4 @@ class GeneralGenerator:
 
 
 o = GeneralGenerator()
-print(getattr(o, "adder_gen")(showconfig=1))
+print(getattr(o, "adder_gen")(showconfig=0))
