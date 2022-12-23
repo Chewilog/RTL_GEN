@@ -246,6 +246,7 @@ def generate(file2open, output_name, add_component='n'):
     aux_generic = {}
     terminals ={}
     constants = {}
+    for_generators = {}
 
     generators_in_diagram = {}
     general_generator_class = GeneralGenerator()

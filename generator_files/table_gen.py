@@ -16,8 +16,8 @@ class TableGenClass():
             aux = sin(2*pi*i/int(parameters[0]))
             aux = binary(aux)
             aux2 = '{0:08b}'.format(i)
-            entity+=f'  "{aux}" when "{aux2}",\n'
-        entity+=f'  "{binary(0)}" when others;'
+            entity += f'  "{aux}" when "{aux2}",\n'
+        entity += f'  "{binary(0)}" when others;'
 
         print(entity)
 
