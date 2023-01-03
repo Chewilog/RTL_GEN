@@ -19,9 +19,5 @@ class TableGenClass():
             entity += f'  "{aux}" when "{aux2}",\n'
         entity += f'  "{binary(0)}" when others;'
 
-        print(entity)
 
-
-a=TableGenClass()
-print(a.table_gen(['8'],{'t':'signal1'},{'b':'signal2'}))
 

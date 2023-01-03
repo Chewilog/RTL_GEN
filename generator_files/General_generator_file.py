@@ -1,12 +1,14 @@
 
 from generator_files.adder_gen import AdderGenClass
 from generator_files.table_gen import TableGenClass
+from generator_files.unite_in_array import UniteInArrayClass
 
 #getattr(o, name)()
 class GeneralGenerator:
     def __init__(self):
         self.adder_gen_class = AdderGenClass()
         self.table_gen_class = TableGenClass()
+        self.unite_in_array_class = UniteInArrayClass()
 
 
     def adder_gen(self, parameters=['8', '0'], inputs={'a':'signal1', 'b':'signal2'}, outputs={'c':'signal3'}, showconfig=0):
@@ -18,3 +20,8 @@ class GeneralGenerator:
         if showconfig:
             return (self.table_gen_class.input_ports, self.table_gen_class.output_ports)
         return self.table_gen_class.table_gen(parameters, inputs, outputs)
+
+    def unite_in_array(self,parameters, inputs, outputs, showconfig):
+        if showconfig:
+            return (self.unite_in_array_class.input_ports, self.unite_in_array_class.output_ports)
+        return self.unite_in_array_class.unite_in_array(parameters, inputs, outputs)

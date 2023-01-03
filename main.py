@@ -30,6 +30,19 @@ class Component:
         self.input_signals = []
         self.output_signals = []
 
+class ForGens:
+    def __init__(self,id):
+        self.id = ''
+        self.iter = ''
+        self.variables_list = {}
+        self.component = {}
+        self.input_signals = {}
+        self.output_signals = {}
+        self.input_ports = {}
+        self.output_ports = {}
+
+
+
 def convert_signal(type0, type1, val):
     type0=type0.upper().split('(')[0]
     type1=type1.upper().split('(')[0]
@@ -148,6 +161,7 @@ def generate(file2open, output_name, add_component='n'):
     generators = {}
     used_components = {}
     used_transitions = {}
+    for_gens = {}
     flag = 0
     flag2 = 0
     component_name=''
@@ -246,7 +260,9 @@ def generate(file2open, output_name, add_component='n'):
     aux_generic = {}
     terminals ={}
     constants = {}
-    for_generators = {}
+    for_gens = {}
+    types_and_constants= {}
+    lists={}
 
     generators_in_diagram = {}
     general_generator_class = GeneralGenerator()
@@ -262,6 +278,59 @@ def generate(file2open, output_name, add_component='n'):
     for child in root[0]:
         dict_child = child.attrib
         if len(dict_child['id']) > 5:
+
+            if 'containerType=tree' in dict_child['style'] or dict_child['parent'] != "1":
+                if 'containerType=tree' in dict_child['style']:
+                    if dict_child['id'] not in for_gens.keys():
+                        for_gens[dict_child['id']] = ForGens(dict_child['id'])
+
+                    iter_comp_aux = dict_child['value'].split('/')
+                    for_gens[dict_child['id']].iter = (iter_comp_aux[1], iter_comp_aux[2])
+                    continue
+
+                else:
+
+                    if '=' in dict_child['value']:
+                        types_and_constants[dict_child['id']] = (dict_child['parent'], dict_child['value'])
+
+                        pass
+                        continue
+                    if dict_child['parent'] not in for_gens.keys():
+                        for_gens[dict_child['parent']] = ForGens(dict_child['parent'])
+
+                    if 'shape=mxgraph.electrical.logic_gates.dual_inline_ic' in dict_child['style']:
+                        aux = dict_child['value'].replace('<br>', '')
+                        aux = aux.split('/')
+                        for_gens[dict_child['parent']].component[dict_child['id']] = (aux[0], aux[1])
+                        continue
+
+                    elif 'endArrow' in dict_child['style'] or 'orthogonalEdgeStyle' in dict_child['style']:
+                        if not dict_child.get('value'):
+                            a = dict_child['id']
+                            print(f'The signal {a} does not have a "from/to" value.')
+                            exit()
+
+                        aux = dict_child['value']
+                        aux = aux.split('/')
+                        is_signal = 1
+                        if 'in' in aux or 'out' in aux:
+                            is_signal = 0
+
+                        signals[dict_child['id']] = InOut(
+                            's' + aux[0].replace('$', 'const') + '_to_' + aux[1] + str(random.randint(100, 1000)) + str(
+                                cnt), (aux, dict_child['source'], dict_child['target']), is_signal)
+
+                        if dict_child['source'] == dict_child['parent']:
+                            for_gens[dict_child['parent']].input_signals[dict_child['id']] = signals[dict_child['id']]
+                            for_gens[dict_child['parent']].input_ports[aux[0]] = aux[1]
+                        else:
+                            for_gens[dict_child['parent']].output_signals[dict_child['id']] = signals[dict_child['id']]
+                            for_gens[dict_child['parent']].output_ports[aux[0]] = aux[1]
+
+                        continue
+
+
+
             if 'shape=mxgraph.electrical.logic_gates.dual_inline_ic' in dict_child['style']:
                 aux = dict_child['value'].replace('<br>', '')
                 aux = aux.split('/')
@@ -310,6 +379,9 @@ def generate(file2open, output_name, add_component='n'):
                     generators_in_diagram[dict_child['id']] = (dict_child['value'].split('/')[0], dict_child['value'].split('/')[1:],{},{})
                 else:
                     generators_in_diagram[dict_child['id']] = (dict_child['value'].split('/')[0], [], [], [])
+
+            elif 'childLayout=stackLayout' in dict_child['style']:
+                lists[dict_child['id']] = []
 
             cnt+=1
 
@@ -384,6 +456,19 @@ def generate(file2open, output_name, add_component='n'):
                 entity += 'signal ' + signals[aux_signals[i][0][0]].name + ' :' + aux_type + ';\n'
                 generators_in_diagram[i][3][signals[aux_signals[i][0][0]].port[0][0]]=  signals[aux_signals[i][0][0]].name
                 continue
+
+            if i in for_gens.keys():
+                print(aux_signals[i])
+                continue
+
+            cont = 0
+            for forgenkey in for_gens.keys():
+                if i in for_gens[forgenkey].component.keys():
+                    cont=1
+            if cont:
+                cont=0
+                continue
+
 
             aux_outputports = component_aux[components[signals[aux_signals[i][0][0]].port[1]][0]].out_ports #  output ports dict
             aux_port = signals[aux_signals[i][0][0]].port[0][0]
