@@ -5,53 +5,52 @@ use IEEE.NUMERIC_STD.ALL;
 entity teste2 is
 
    port(
-     A: in std_logic_vector(7 downto 0);
      B: in std_logic_vector(7 downto 0);
+     A: in std_logic_vector(7 downto 0);
      C: in std_logic_vector(7 downto 0);
-     Z: out std_logic_vector(7 downto 0);
-     J: out std_logic_vector(7 downto 0)   );
+     clk: in std_logic;
+     rst: in std_logic;
+     clr: in std_logic;
+     ld: in std_logic;
+     Z: out array_24b   );
 end teste2;
 
 architecture Behavioral of teste2 is
 
-component addsub8 is
-    Port ( A : in STD_LOGIC_VECTOR (7 downto 0);
-           B : in STD_LOGIC_VECTOR (7 downto 0);
-           op : in STD_LOGIC;
-           Y : out STD_LOGIC_VECTOR (7 downto 0));
+type array_24b is array(0 to 2) of std_logic_vector(7 downto 0);
+constant N : integer;
+component reg8 is
+    Port ( clk : in STD_LOGIC;
+           rst : in STD_LOGIC;
+           clr : in STD_LOGIC;
+           ld : in STD_LOGIC;
+           X : in STD_LOGIC_VECTOR(7 DOWNTO 0);
+           Y : out STD_LOGIC_VECTOR(7 DOWNTO 0));
 end component;
 
-signal sY_to_A1170 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-constant sconst_to_op13511 : std_logic:='0';
-signal sY_to_out36413 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-constant sconst_to_op52215 : std_logic:='1';
-signal sc_to_out47017 :std_logic_vector(7 downto 0);
+signal sd_to_e5101 :array_24b;
 
 begin
 
-add1: addsub8
-  port map(
-     A=>A,
-     B=>B,
-     OP=>sconst_to_op13511,
-     Y=>sY_to_A1170);
-
-sub1: addsub8
-  port map(
-     A=>sY_to_A1170,
-     B=>C,
-     OP=>sconst_to_op52215,
-     Y=>sY_to_out36413);
 
 
-
-process(sY_to_A1170,C)
+process(B,A,C)
 begin
-   sc_to_out47017<= unsigned(sY_to_A1170)+unsigned(C);
+   sd_to_e5101<=B & A & C ;
 end process;
 
-Z<=sY_to_out36413;
-J<=sc_to_out47017;
+gen_tot: FOR I IN 1 TO N GENERATE
+  tot: reg8
+      port map(
+          clr => sc_to_clr7431,
+          rst => sb_to_rst8531,
+          clk => sa_to_clk4361,
+          X => se_to_X5961,
+          ld => sd_to_ld2961,
+          f => sY_to_f3901);
+END GENERATE;
+
+Z<=sf_to_out2860;
  
 
 end behavioral;

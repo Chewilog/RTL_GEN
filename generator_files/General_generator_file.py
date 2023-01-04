@@ -16,12 +16,12 @@ class GeneralGenerator:
             return (self.adder_gen_class.input_ports, self.adder_gen_class.output_ports)
         return self.adder_gen_class.adder_gen(parameters, inputs, outputs)
 
-    def table_gen(self,parameters, inputs, outputs, showconfig):
+    def table_gen(self, parameters=[], inputs={}, outputs={}, showconfig=0):
         if showconfig:
             return (self.table_gen_class.input_ports, self.table_gen_class.output_ports)
         return self.table_gen_class.table_gen(parameters, inputs, outputs)
 
-    def unite_in_array(self,parameters, inputs, outputs, showconfig):
+    def unite_in_array(self, parameters=[], inputs={}, outputs={}, showconfig=0):
         if showconfig:
             return (self.unite_in_array_class.input_ports, self.unite_in_array_class.output_ports)
         return self.unite_in_array_class.unite_in_array(parameters, inputs, outputs)

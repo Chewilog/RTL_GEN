@@ -280,7 +280,12 @@ def generate(file2open, output_name, add_component='n'):
         if len(dict_child['id']) > 5:
 
             if 'containerType=tree' in dict_child['style'] or dict_child['parent'] != "1":
-                if 'containerType=tree' in dict_child['style']:
+
+
+                if    'text' in dict_child['style'] and dict_child['parent'] in lists.keys():
+                    lists[dict_child['parent']].append(dict_child['value'])
+
+                elif 'containerType=tree' in dict_child['style']:
                     if dict_child['id'] not in for_gens.keys():
                         for_gens[dict_child['id']] = ForGens(dict_child['id'])
 
@@ -301,6 +306,7 @@ def generate(file2open, output_name, add_component='n'):
                     if 'shape=mxgraph.electrical.logic_gates.dual_inline_ic' in dict_child['style']:
                         aux = dict_child['value'].replace('<br>', '')
                         aux = aux.split('/')
+                        components[dict_child['id']] = (aux[0], aux[1])
                         for_gens[dict_child['parent']].component[dict_child['id']] = (aux[0], aux[1])
                         continue
 
@@ -335,6 +341,8 @@ def generate(file2open, output_name, add_component='n'):
                 aux = dict_child['value'].replace('<br>', '')
                 aux = aux.split('/')
                 components[dict_child['id']] = (aux[0], aux[1])
+
+
 
             #signals detection
             elif 'endArrow' in dict_child['style'] or 'orthogonalEdgeStyle' in dict_child['style']:
@@ -378,10 +386,12 @@ def generate(file2open, output_name, add_component='n'):
                 if len(dict_child['value'].split('/'))>1:
                     generators_in_diagram[dict_child['id']] = (dict_child['value'].split('/')[0], dict_child['value'].split('/')[1:],{},{})
                 else:
-                    generators_in_diagram[dict_child['id']] = (dict_child['value'].split('/')[0], [], [], [])
+                    generators_in_diagram[dict_child['id']] = (dict_child['value'].split('/')[0], [], {}, {})
 
             elif 'childLayout=stackLayout' in dict_child['style']:
                 lists[dict_child['id']] = []
+
+
 
             cnt+=1
 
@@ -413,6 +423,17 @@ def generate(file2open, output_name, add_component='n'):
 
     entity+= 'architecture Behavioral of '+output_name+' is\n\n'
 
+    #TYPES
+    for i in lists.keys():
+        for j in lists[i]:
+            aux = j.split("=")
+            if ' of ' in j:
+                entity += "type "+aux[0] + " is " + aux[1]+';\n'
+            else:
+                entity += 'constant ' + aux[0]+ " : " + aux[1]+';\n'
+
+
+
     #components
     already_created = []
     for i in components.keys():
@@ -441,7 +462,7 @@ def generate(file2open, output_name, add_component='n'):
             aux_signals[signals[key].port[1]].append((key, signals[key].port[2]))
 
     for i in aux_signals.keys():
-        if len(aux_signals[i]) != 1:
+        if len(aux_signals[i]) != 1 and i not in for_gens.keys():
             for j in aux_signals[i]:
                 signals[j[0]].name = signals[aux_signals[i][0][0]].name # talvez funcione mas ficar de olho
 
@@ -454,16 +475,21 @@ def generate(file2open, output_name, add_component='n'):
                 signals[aux_signals[i][0][0]].type = inout_of_generator[1][signals[aux_signals[i][0][0]].port[0][0]]
                 aux_type = signals[aux_signals[i][0][0]].type
                 entity += 'signal ' + signals[aux_signals[i][0][0]].name + ' :' + aux_type + ';\n'
-                generators_in_diagram[i][3][signals[aux_signals[i][0][0]].port[0][0]]=  signals[aux_signals[i][0][0]].name
+                generators_in_diagram[i][3][signals[aux_signals[i][0][0]].port[0][0]]=signals[aux_signals[i][0][0]].name
                 continue
 
             if i in for_gens.keys():
-                print(aux_signals[i])
-                continue
+                # aux_type = signals[aux_signals[i][0][0]].type
+                 for j in aux_signals[i]:
+                     print(signals[j[0]].port)
+                     pass
 
-            cont = 0
+                 continue
+
+            cont=0
             for forgenkey in for_gens.keys():
                 if i in for_gens[forgenkey].component.keys():
+                    print(for_gens[forgenkey])
                     cont=1
             if cont:
                 cont=0
@@ -497,6 +523,9 @@ def generate(file2open, output_name, add_component='n'):
                         signals[aux_signals[k][0][0]].type = signals[j[0]].type
                     else:
                         signals[j[0]].type = signals[aux_signals[k][0][0]].type  # talvez funcione mas ficar de olho
+
+
+
         cnt+=1
     #  begin architecture
     entity+='\nbegin\n\n'
@@ -512,6 +541,13 @@ def generate(file2open, output_name, add_component='n'):
 
     for key in components.keys():
 
+        cont=0
+        for forgenkey in for_gens:
+            if key in for_gens[forgenkey].component.keys():
+                cont=1
+        if cont:
+            cont=0
+            continue
         #  organize input/output/generic
         component_outputs = {}
         component_inputs = {}
@@ -527,9 +563,9 @@ def generate(file2open, output_name, add_component='n'):
                     if signals[i].port[0][0]=='generic':
                         generic_inputs[signals[i].port[0][1]] = signals[i].name
                     else:
-                        component_inputs[signals[i].port[0][1].upper()] = (signals[i].name,signals[i].type)
+                        component_inputs[signals[i].port[0][1].upper()] = (signals[i].name, signals[i].type)
                 else:
-                    component_inputs[signals[i].port[0][1].upper()] = (terminals[signals[i].port[1]][0],terminals[signals[i].port[1]][1])
+                    component_inputs[signals[i].port[0][1].upper()] = (terminals[signals[i].port[1]][0], terminals[signals[i].port[1]][1])
 
         entity += components[key][1] + ': ' + components[key][0]
         if len(generic_inputs.keys()) > 0:
@@ -582,8 +618,33 @@ def generate(file2open, output_name, add_component='n'):
                     pass
 
     entity+='\n\n'
+
+    #code generators
     for i in generators_in_diagram.keys(): # É preciso arrumar quando for um input
          entity+=(getattr(general_generator_class,generators_in_diagram[i][0])(generators_in_diagram[i][1],generators_in_diagram[i][2],generators_in_diagram[i][3]))
+
+    # for generators
+    entity+='\n'
+    for forgen in for_gens.keys():
+        entity+= 'gen_'+list(for_gens[forgen].component.values())[0][1]+': '+ 'FOR' + ' I ' +'IN ' +for_gens[forgen].iter[0]  +' TO '+ for_gens[forgen].iter[1] + ' GENERATE\n'
+        entity+= '  '+list(for_gens[forgen].component.values())[0][1]+': '+list(for_gens[forgen].component.values())[0][0]+'\n'
+        entity+= '      port map(\n'
+
+        # INPUTS
+        for i in for_gens[forgen].input_signals.keys():
+
+            entity+= '          '+ for_gens[forgen].input_signals[i].port[0][1] + ' => ' + for_gens[forgen].input_signals[i].name+',\n'
+
+        # OUTPUTS
+        for i in for_gens[forgen].output_signals.keys():
+
+            entity+= '          '+ for_gens[forgen].output_signals[i].port[0][1] + ' => ' + for_gens[forgen].output_signals[i].name+',\n'
+
+        entity=entity[0:-2]+');\n'
+        entity+='END GENERATE;\n'
+        # entity += component_aux[list(for_gens[forgen].component.values())[0][0]]
+
+
 
     #  connect outputs
     entity+='\n'
