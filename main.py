@@ -632,13 +632,17 @@ def generate(file2open, output_name, add_component='n'):
 
         # INPUTS
         for i in for_gens[forgen].input_signals.keys():
-
-            entity+= '          '+ for_gens[forgen].input_signals[i].port[0][1] + ' => ' + for_gens[forgen].input_signals[i].name+',\n'
+            if len(for_gens[forgen].input_signals[i].port[0])==2:
+                entity+= '          '+ for_gens[forgen].input_signals[i].port[0][1] + ' => ' + for_gens[forgen].input_signals[i].name+',\n'
+            else:
+                entity+= '          '+ for_gens[forgen].input_signals[i].port[0][1] + ' => ' + for_gens[forgen].input_signals[i].name+'('+ for_gens[forgen].input_signals[i].port[0][2] +'),\n'
 
         # OUTPUTS
         for i in for_gens[forgen].output_signals.keys():
-
-            entity+= '          '+ for_gens[forgen].output_signals[i].port[0][1] + ' => ' + for_gens[forgen].output_signals[i].name+',\n'
+            if len(for_gens[forgen].output_signals[i].port[0]) == 2:
+                entity+= '          '+ for_gens[forgen].output_signals[i].port[0][1] + ' => ' + for_gens[forgen].output_signals[i].name+',\n'
+            else:
+                entity+= '          '+ for_gens[forgen].output_signals[i].port[0][1] + ' => ' + for_gens[forgen].output_signals[i].name+'('+ for_gens[forgen].output_signals[i].port[0][2] +'),\n'
 
         entity=entity[0:-2]+');\n'
         entity+='END GENERATE;\n'

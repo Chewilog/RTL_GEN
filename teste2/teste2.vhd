@@ -28,7 +28,7 @@ component reg8 is
            Y : out STD_LOGIC_VECTOR(7 DOWNTO 0));
 end component;
 
-signal sd_to_e5101 :array_24b;
+signal sd_to_e1271 :array_24b;
 
 begin
 
@@ -36,21 +36,21 @@ begin
 
 process(B,A,C)
 begin
-   sd_to_e5101<=B & A & C ;
+   sd_to_e1271<=B & A & C ;
 end process;
 
 gen_tot: FOR I IN 1 TO N GENERATE
   tot: reg8
       port map(
-          clr => sc_to_clr7431,
-          rst => sb_to_rst8531,
-          clk => sa_to_clk4361,
-          X => se_to_X5961,
-          ld => sd_to_ld2961,
-          f => sY_to_f3901);
+          clr => sc_to_clr6851,
+          rst => sb_to_rst1791,
+          clk => sa_to_clk2561,
+          X => se_to_X5631(I),
+          ld => sd_to_ld6541,
+          f => sY_to_f9811(array_24b));
 END GENERATE;
 
-Z<=sf_to_out2860;
+Z<=sf_to_out9090;
  
 
 end behavioral;
