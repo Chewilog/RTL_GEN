@@ -430,7 +430,7 @@ def generate(file2open, output_name, add_component='n'):
             if ' of ' in j:
                 entity += "type "+aux[0] + " is " + aux[1]+';\n'
             else:
-                entity += 'constant ' + aux[0]+ " : " + aux[1]+';\n'
+                entity += 'constant ' + aux[0]+ " : " + aux[1]+':='+aux[2] +';\n'
 
 
 
@@ -452,8 +452,8 @@ def generate(file2open, output_name, add_component='n'):
     #  signals
     aux_signals = {}
     cnt = 0
+    # primeiro conseguir declarar sinais e depois ligar com os sinais auxiliares
     for key in signals:
-
 
         if signals[key].port[1] not in aux_signals.keys() :
             aux_signals[signals[key].port[1]] = []
@@ -468,6 +468,8 @@ def generate(file2open, output_name, add_component='n'):
 
         if not(signals[aux_signals[i][0][0]].port[0][0] == 'in' or signals[aux_signals[i][0][0]].port[0][0] == '$' or signals[aux_signals[i][0][0]].port[0][0] == 'generic'):
             #  components[signals[aux_signals[i][0][0]].port[1]][0] -> name of component
+
+
             if i in generators_in_diagram.keys():
                 # getattr(general_generator_class,)
                 #getattr(o, "adder_gen")(showconfig=1)
@@ -481,15 +483,49 @@ def generate(file2open, output_name, add_component='n'):
             if i in for_gens.keys():
                 # aux_type = signals[aux_signals[i][0][0]].type
                  for j in aux_signals[i]:
-                     print(signals[j[0]].port)
-                     pass
+                     # definir tipo
+                     if signals[j[0]].port[0][0] == 'in':
+                        print("aqui"
+                              "")
+
+                     if len(signals[j[0]].port[0]) >2: #Ocorre quando está entrando em um componente dentro do forgen e quando sai para outro forgen
+                         signals[j[0]].type = signals[j[0]].port[0][3]
+                         aux_type = signals[j[0]].type
+                         entity += 'signal ' + signals[j[0]].name + ' :' + aux_type + ';\n'
+
+                     else: #Ocorre quando vai para um terminal de saída, um componente ou gerador de codigo
+                        if signals[j[0]].port[0][1]=='out':#terminal de saida
+                            # terminals
+                            aux_type = terminals[signals[j[0]].port[2]][1]
+                            entity += 'signal ' + signals[j[0]].name + ' :' + aux_type + ';\n'
+                            pass
+
+                        elif signals[j[0]].port[2] in components.keys():# outro componente
+                            aux_type = component_aux[components[signals[j[0]].port[2]][0]].in_ports[signals[j[0]].port[0][1]]
+                            entity += 'signal ' + signals[j[0]].name + ' :' + aux_type + ';\n'
+
+                        elif signals[j[0]].port[2] in for_gens.keys(): # Gerador de código
+                            aux_type = for_gens[signals[j[0]].port[2]].input_ports[signals[j[0]].port[0][1]]
+                            entity += 'signal ' + signals[j[0]].name + ' :' + aux_type + ';\n'
+
+                        elif signals[j[0]].port[0][0] == 'in':
+                            signals[aux_signals[i][0][0]].type = terminals[signals[aux_signals[i][0][0]].port[1]][1]
+                            aux = terminals[signals[aux_signals[i][0][0]].port[1]]
+                            terminals[signals[aux_signals[i][0][0]].port[1]]=(aux[0],aux[1],i)
 
                  continue
 
             cont=0
             for forgenkey in for_gens.keys():
                 if i in for_gens[forgenkey].component.keys():
-                    print(for_gens[forgenkey])
+                    for j in aux_signals[i]:
+                        if len(signals[j[0]].port[
+                                   0]) > 2:  # Ocorre quando está entrando em um componente dentro do forgen e quando sai para outro forgen
+                            signals[j[0]].type = signals[j[0]].port[0][3]
+                            aux_type = signals[j[0]].type
+                            entity += 'signal ' + signals[j[0]].name + ' :' + aux_type + ';\n'
+
+                        pass
                     cont=1
             if cont:
                 cont=0
@@ -515,6 +551,11 @@ def generate(file2open, output_name, add_component='n'):
 
         elif signals[aux_signals[i][0][0]].port[0][0] == 'in':
             signals[aux_signals[i][0][0]].type = terminals[signals[aux_signals[i][0][0]].port[1]][1]
+            print('port2 é ',signals[aux_signals[i][0][0]].port[2])
+
+            if signals[aux_signals[i][0][0]].port[2] in list(for_gens.keys()):
+                aux = terminals[signals[aux_signals[i][0][0]].port[1]]
+                terminals[signals[aux_signals[i][0][0]].port[1]] = (aux[0], aux[1], signals[aux_signals[i][0][0]].port[2],signals[aux_signals[i][0][0]].port[0][1])
 
         for k in aux_signals.keys():
             if len(aux_signals[k]) != 1:
@@ -623,7 +664,7 @@ def generate(file2open, output_name, add_component='n'):
     for i in generators_in_diagram.keys(): # É preciso arrumar quando for um input
          entity+=(getattr(general_generator_class,generators_in_diagram[i][0])(generators_in_diagram[i][1],generators_in_diagram[i][2],generators_in_diagram[i][3]))
 
-    # for generators
+    # FOR GENERATOR
     entity+='\n'
     for forgen in for_gens.keys():
         entity+= 'gen_'+list(for_gens[forgen].component.values())[0][1]+': '+ 'FOR' + ' I ' +'IN ' +for_gens[forgen].iter[0]  +' TO '+ for_gens[forgen].iter[1] + ' GENERATE\n'
@@ -635,19 +676,43 @@ def generate(file2open, output_name, add_component='n'):
             if len(for_gens[forgen].input_signals[i].port[0])==2:
                 entity+= '          '+ for_gens[forgen].input_signals[i].port[0][1] + ' => ' + for_gens[forgen].input_signals[i].name+',\n'
             else:
-                entity+= '          '+ for_gens[forgen].input_signals[i].port[0][1] + ' => ' + for_gens[forgen].input_signals[i].name+'('+ for_gens[forgen].input_signals[i].port[0][2] +'),\n'
+                entity+= '          '+ for_gens[forgen].input_signals[i].port[0][1] + ' => ' + for_gens[forgen].input_signals[i].name
+                if for_gens[forgen].input_signals[i].port[0][2]!='0':
+                    entity+='('+ for_gens[forgen].input_signals[i].port[0][2] +')'
+            entity+=',\n'
 
         # OUTPUTS
         for i in for_gens[forgen].output_signals.keys():
             if len(for_gens[forgen].output_signals[i].port[0]) == 2:
-                entity+= '          '+ for_gens[forgen].output_signals[i].port[0][1] + ' => ' + for_gens[forgen].output_signals[i].name+',\n'
+                entity+= '          '+ for_gens[forgen].output_signals[i].port[0][0] + ' => ' + for_gens[forgen].output_signals[i].name+',\n'
             else:
-                entity+= '          '+ for_gens[forgen].output_signals[i].port[0][1] + ' => ' + for_gens[forgen].output_signals[i].name+'('+ for_gens[forgen].output_signals[i].port[0][2] +'),\n'
-
+                entity+= '          '+ for_gens[forgen].output_signals[i].port[0][0] + ' => ' + for_gens[forgen].output_signals[i].name
+                if for_gens[forgen].output_signals[i].port[0][2]!='0':
+                    entity+='('+ for_gens[forgen].output_signals[i].port[0][2]+')'
+            entity += ',\n'
         entity=entity[0:-2]+');\n'
-        entity+='END GENERATE;\n'
+        entity+='END GENERATE;\n\n'
         # entity += component_aux[list(for_gens[forgen].component.values())[0][0]]
 
+    #s-2 /j-9
+    #connect buff signals/falta implementar para constantes e Generic
+    for forgen in for_gens.keys():
+        for input_forgen in for_gens[forgen].input_signals.keys() :
+            for j in signals.keys():
+                if for_gens[forgen].input_signals[input_forgen].port[1]==signals[j].port[2] and for_gens[forgen].input_signals[input_forgen].port[0][0]==signals[j].port[0][1] and 'in' not in signals[j].port[0]:
+                    entity += for_gens[forgen].input_signals[input_forgen].name +"<="+ signals[j].name+";\n"
+
+            for j in terminals.keys():
+                if len(terminals[j])>2:
+                    if terminals[j][2]==forgen and terminals[j][3].upper()==for_gens[forgen].input_signals[input_forgen].port[0][0].upper():
+                        entity+=for_gens[forgen].input_signals[input_forgen].name +"<="+terminals[j][0]+';\n'
+            #Falta constantes e generic
+
+
+        for input_forgen in for_gens[forgen].output_signals.keys():
+            for j in signals.keys():
+                if for_gens[forgen].output_signals[input_forgen].port[2]==signals[j].port[1] and for_gens[forgen].output_signals[input_forgen].port[0][1]==signals[j].port[0][0] and 'in' not in signals[j].port[0]:
+                    entity += signals[j].name+"<="+  for_gens[forgen].output_signals[input_forgen].name +";\n"
 
 
     #  connect outputs

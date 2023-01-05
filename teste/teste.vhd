@@ -3,75 +3,56 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity teste is
-   generic(
-   max0 : integer := 10   );
 
    port(
-     upORdown: in std_logic;
-     enable: in std_logic;
-     clk: in std_logic;
-     rst: in std_logic;
-     ilt8: out std_logic;
-     aux: out std_logic;
-     iteste: out std_logic   );
+     A: in std_logic_vector(7 downto 0);
+     B: in std_logic_vector(7 downto 0);
+     C: in std_logic_vector(7 downto 0);
+     Z: out std_logic_vector(7 downto 0);
+     J: out std_logic_vector(7 downto 0)   );
 end teste;
 
 architecture Behavioral of teste is
 
-component Counter is
-    generic(max : integer:=10);
-    Port ( clk : in STD_LOGIC;
-           reset : in STD_LOGIC;
-           en : in STD_LOGIC;
-           updown : in STD_LOGIC;
-           number : out integer);
+component addsub8 is
+    Port ( A : in STD_LOGIC_VECTOR (7 downto 0);
+           B : in STD_LOGIC_VECTOR (7 downto 0);
+           op : in STD_LOGIC;
+           Y : out STD_LOGIC_VECTOR (7 downto 0));
 end component;
 
-component Comparator is
-    Port ( a : in integer;
-           b : in integer;
-           op : in STD_LOGIC_VECTOR(2 downto 0);
-           cmpout : out STD_LOGIC);
-end component;
-
-signal snumber_to_a475 :INTEGER;
-signal scmpout_to_out637 :STD_LOGIC;
-constant const_b306 : integer:=8;
-constant const_op773 : std_logic_vector(2 downto 0):="000";
-signal scmpout_to_out188 :STD_LOGIC;
-constant const_a246 : std_logic_vector(3 downto 0):="1000";
-constant const_op229 : std_logic_vector(2 downto 0):="101";
+signal sY_to_A6900 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+constant sconst_to_op69611 : std_logic:='0';
+signal sY_to_out84113 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+constant sconst_to_op29815 : std_logic:='1';
+signal sc_to_out45117 :std_logic_vector(7 downto 0);
 
 begin
 
-cntr: Counter
-  generic map(
-    max => max0);
-
+add1: addsub8
   port map(
-     CLK=>clk;
-     RESET=>rst;
-     EN=>enable;
-     UPDOWN=>upORdown;
-     NUMBER=>snumber_to_a475);
+     A=>A,
+     B=>B,
+     OP=>sconst_to_op69611,
+     Y=>sY_to_A6900);
 
-cmp0: Comparator
+sub1: addsub8
   port map(
-     A=>snumber_to_a475;
-     B=>sconst_to_b119;
-     OP=>sconst_to_op932;
-     CMPOUT=>scmpout_to_out637);
-
-cmp1: Comparator
-  port map(
-     A=>to_integer(unsigned(sconst_to_a985));
-     B=>sconst_to_b119;
-     OP=>sconst_to_op912;
-     CMPOUT=>scmpout_to_out188);
+     A=>sY_to_A6900,
+     B=>C,
+     OP=>sconst_to_op29815,
+     Y=>sY_to_out84113);
 
 
-ilt8<=scmpout_to_out637;
-aux<=sin_to_updown851;
-iteste<=scmpout_to_out188;
+
+process(sY_to_A6900,C)
+begin
+   sc_to_out45117<= unsigned(sY_to_A6900)+unsigned(C);
+end process;
+
+
+Z<=sY_to_out84113;
+J<=sc_to_out45117;
+ 
 
 end behavioral;
