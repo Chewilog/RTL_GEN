@@ -36,7 +36,6 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity PWM is
     generic( dutyCicle: std_logic := '0'
-             dutyCicle: std_logic := '0'
     );
     Port ( clk : in STD_LOGIC;
            rst : in STD_LOGIC;

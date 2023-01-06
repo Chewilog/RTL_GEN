@@ -463,7 +463,10 @@ def generate(file2open, output_name, add_component='n'):
 
     for i in aux_signals.keys():
         if len(aux_signals[i]) != 1 and i not in for_gens.keys():
+
             for j in aux_signals[i]:
+                if i in generators_in_diagram and signals[j[0]].port[0][0] !=  signals[aux_signals[i][0][0]].port[0][0]:
+                    continue
                 signals[j[0]].name = signals[aux_signals[i][0][0]].name # talvez funcione mas ficar de olho
 
         if not(signals[aux_signals[i][0][0]].port[0][0] == 'in' or signals[aux_signals[i][0][0]].port[0][0] == '$' or signals[aux_signals[i][0][0]].port[0][0] == 'generic'):
@@ -474,7 +477,9 @@ def generate(file2open, output_name, add_component='n'):
                 # getattr(general_generator_class,)
                 #getattr(o, "adder_gen")(showconfig=1)
                 inout_of_generator = getattr(general_generator_class, generators_in_diagram[i][0])(showconfig=1)
-                signals[aux_signals[i][0][0]].type = inout_of_generator[1][signals[aux_signals[i][0][0]].port[0][0]]
+                #botar um for aqui
+                for j in aux_signals[i]:
+                signals[j[0]].type = inout_of_generator[1][signals[aux_signals[i][0][0]].port[0][0]]
                 aux_type = signals[aux_signals[i][0][0]].type
                 entity += 'signal ' + signals[aux_signals[i][0][0]].name + ' :' + aux_type + ';\n'
                 generators_in_diagram[i][3][signals[aux_signals[i][0][0]].port[0][0]]=signals[aux_signals[i][0][0]].name
@@ -484,9 +489,7 @@ def generate(file2open, output_name, add_component='n'):
                 # aux_type = signals[aux_signals[i][0][0]].type
                  for j in aux_signals[i]:
                      # definir tipo
-                     if signals[j[0]].port[0][0] == 'in':
-                        print("aqui"
-                              "")
+
 
                      if len(signals[j[0]].port[0]) >2: #Ocorre quando está entrando em um componente dentro do forgen e quando sai para outro forgen
                          signals[j[0]].type = signals[j[0]].port[0][3]

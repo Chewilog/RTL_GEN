@@ -1,4 +1,4 @@
-from math import sin,pi
+from math import sin, pi
 import struct
 def binary(num):
     return ''.join('{:0>8b}'.format(c) for c in struct.pack('!f', num))
@@ -21,7 +21,7 @@ class TableGenClass():
         entity += f'  "{binary(0)}" when others;'
         return entity
 
-a = TableGenClass()
-
-print(a.table_gen() )
+# a = TableGenClass()
+#
+# print(a.table_gen() )
 
