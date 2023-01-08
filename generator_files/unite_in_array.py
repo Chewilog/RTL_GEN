@@ -21,6 +21,6 @@ class UniteInArrayClass():
 
             entity += '\nend process;\n'
             return entity
-
-a = UniteInArrayClass()
-print(a.unite_in_array())
+#
+# a = UniteInArrayClass()
+# print(a.unite_in_array())

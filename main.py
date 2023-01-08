@@ -104,7 +104,8 @@ def convert_signal(type0, type1, val):
         case ('INTEGER', 'STD_LOGIC_VECTOR'):
             print(val, '-> has been transformed from ', type0, 'to', type1)
             return f'std_logic_vector(to_unsigned({val},1))'
-
+        case _:
+            print("conversion not supported"+type0+'and'+type1)
 def get_genport(line):
 
     line2 = line
@@ -479,10 +480,10 @@ def generate(file2open, output_name, add_component='n'):
                 inout_of_generator = getattr(general_generator_class, generators_in_diagram[i][0])(showconfig=1)
                 #botar um for aqui
                 for j in aux_signals[i]:
-                signals[j[0]].type = inout_of_generator[1][signals[aux_signals[i][0][0]].port[0][0]]
-                aux_type = signals[aux_signals[i][0][0]].type
-                entity += 'signal ' + signals[aux_signals[i][0][0]].name + ' :' + aux_type + ';\n'
-                generators_in_diagram[i][3][signals[aux_signals[i][0][0]].port[0][0]]=signals[aux_signals[i][0][0]].name
+                    signals[j[0]].type = inout_of_generator[1][signals[j[0]].port[0][0]]
+                    aux_type = signals[j[0]].type
+                    entity += 'signal ' + signals[j[0]].name + ' :' + aux_type + ';\n'
+                    generators_in_diagram[i][3][signals[j[0]].port[0][0]]=signals[j[0]].name
                 continue
 
             if i in for_gens.keys():
@@ -504,7 +505,7 @@ def generate(file2open, output_name, add_component='n'):
                             pass
 
                         elif signals[j[0]].port[2] in components.keys():# outro componente
-                            aux_type = component_aux[components[signals[j[0]].port[2]][0]].in_ports[signals[j[0]].port[0][1]]
+                            aux_type = component_aux[components[signals[j[0]].port[2]][0]].in_ports[signals[j[0]].port[0][1].upper()]
                             entity += 'signal ' + signals[j[0]].name + ' :' + aux_type + ';\n'
 
                         elif signals[j[0]].port[2] in for_gens.keys(): # Gerador de código
@@ -554,7 +555,7 @@ def generate(file2open, output_name, add_component='n'):
 
         elif signals[aux_signals[i][0][0]].port[0][0] == 'in':
             signals[aux_signals[i][0][0]].type = terminals[signals[aux_signals[i][0][0]].port[1]][1]
-            print('port2 é ',signals[aux_signals[i][0][0]].port[2])
+            # print('port2 é ',signals[aux_signals[i][0][0]].port[2])
 
             if signals[aux_signals[i][0][0]].port[2] in list(for_gens.keys()):
                 aux = terminals[signals[aux_signals[i][0][0]].port[1]]
@@ -682,7 +683,7 @@ def generate(file2open, output_name, add_component='n'):
                 entity+= '          '+ for_gens[forgen].input_signals[i].port[0][1] + ' => ' + for_gens[forgen].input_signals[i].name
                 if for_gens[forgen].input_signals[i].port[0][2]!='0':
                     entity+='('+ for_gens[forgen].input_signals[i].port[0][2] +')'
-            entity+=',\n'
+                entity+=',\n'
 
         # OUTPUTS
         for i in for_gens[forgen].output_signals.keys():
