@@ -27,6 +27,7 @@ class Component:
         self.in_ports = {}
         self.out_ports = {}
         self.generic_ports = []
+        self.aux_generic_ports = {}
         self.input_signals = []
         self.output_signals = []
 
@@ -216,6 +217,7 @@ def generate(file2open, output_name, add_component='n'):
                     elif flag2 == 1:
 
                         component_aux[aux].generic_ports.append(get_genport(line))
+
                     elif flag2 == 0:
                         if ':' in line:
                             port = get_port(line)
@@ -252,6 +254,11 @@ def generate(file2open, output_name, add_component='n'):
     for i in component_aux.keys():
         if '' in component_aux[i].generic_ports:
             component_aux[i].generic_ports = component_aux[i].generic_ports[:-1]
+
+    for i in component_aux.keys():
+        if len(component_aux[i].generic_ports)>0:
+            for j in component_aux[i].generic_ports:
+                component_aux[i].aux_generic_ports[j[0]]=j[1]
 
     components = {}
     signals={}
@@ -583,7 +590,7 @@ def generate(file2open, output_name, add_component='n'):
     #     for i in generic:
     #         aux_generic[i[2]] = (i[1],i[0])
 
-
+    #instanciação de componentes
     for key in components.keys():
 
         cont=0
@@ -596,42 +603,45 @@ def generate(file2open, output_name, add_component='n'):
         #  organize input/output/generic
         component_outputs = {}
         component_inputs = {}
+        component_generic = {}
         generic_inputs = {}
         for i in signals.keys():
             if signals[i].port[1] == key:
-
                 component_outputs[signals[i].port[0][0].upper()]=(signals[i].name,signals[i].type)
             elif signals[i].port[2] == key:
-
                     # generators_in_diagram[i][2][signals[aux_signals[i][0][0]].port[0][0]]
+
                 if signals[i].is_signal: # precisa testar mais casos genericos
                     if signals[i].port[0][0]=='generic':
                         generic_inputs[signals[i].port[0][1]] = signals[i].name
+                    elif signals[i].port[0][1] in list(component_aux[components[key][0]].aux_generic_ports.keys()):
+                        component_generic[signals[i].port[0][1]] = signals[i].name
                     else:
                         component_inputs[signals[i].port[0][1].upper()] = (signals[i].name, signals[i].type)
                 else:
-                    component_inputs[signals[i].port[0][1].upper()] = (terminals[signals[i].port[1]][0], terminals[signals[i].port[1]][1])
+                        component_inputs[signals[i].port[0][1].upper()] = (terminals[signals[i].port[1]][0], terminals[signals[i].port[1]][1])
 
         entity += components[key][1] + ': ' + components[key][0]
-        if len(generic_inputs.keys()) > 0:
+        if len(component_generic.keys()) > 0:
             entity += '\n  generic map(\n'
 
+            for generic_input in component_generic.keys():
+                entity+= '     '+generic_input+' =>'+ component_generic[generic_input]+',\n'
 
-            aux = {}
-            for i in generic:
-                aux[i[2]] = (i[0],i[1])
-
-            aux2 = {}
-            for i in component_aux[components[key][0]].generic_ports:
-                aux2[i[0]]=i[1]
-
-
-            for item in generic_inputs.keys():
-                if generic_inputs[item] in aux.keys():
-                                                # converte do type0 para type1
-                    entity+= '    '+item+' => '+convert_signal(aux[generic_inputs[item]][1], aux2[item], generic_inputs[item])+',\n'
-
-            entity=entity[:-2]+');\n'
+            # for i in generic:
+            #     aux[i[2]] = (i[0],i[1])
+            #
+            # aux2 = {}
+            # for i in component_aux[components[key][0]].generic_ports:
+            #     aux2[i[0]]=i[1]
+            #
+            #
+            # for item in generic_inputs.keys():
+            #     if generic_inputs[item] in aux.keys():
+            #                                     # converte do type0 para type1
+            #         entity+= '    '+item+' => '+convert_signal(aux[generic_inputs[item]][1], aux2[item], generic_inputs[item])+',\n'
+            #
+            entity=entity[:-2]+')\n'
 
         entity+= '\n  port map(\n'
 
@@ -758,6 +768,6 @@ def generate(file2open, output_name, add_component='n'):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    generate('teste.xml', 'teste2', 'N')
+    generate('teste.xml', 'teste3', 'N')
 
 

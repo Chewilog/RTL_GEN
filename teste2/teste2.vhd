@@ -28,14 +28,14 @@ component reg8 is
            Y : out STD_LOGIC_VECTOR(7 DOWNTO 0));
 end component;
 
-signal sf_to_out1240 :array_24b;
-signal sc_to_clr9721 :STD_LOGIC;
-signal sb_to_rst5771 :STD_LOGIC;
-signal sa_to_clk3381 :STD_LOGIC;
-signal se_to_X5631 :array_24b;
-signal sd_to_ld4321 :STD_LOGIC;
-signal sY_to_f9111 :array_24b;
-signal sd_to_e5101 :array_24b;
+signal sf_to_out6680 :array_24b;
+signal sc_to_clr1961 :STD_LOGIC;
+signal sb_to_rst5231 :STD_LOGIC;
+signal sa_to_clk5861 :STD_LOGIC;
+signal se_to_X7841 :array_24b;
+signal sd_to_ld6161 :STD_LOGIC;
+signal sY_to_f7561 :array_24b;
+signal sd_to_e8121 :array_24b;
 
 begin
 
@@ -43,28 +43,28 @@ begin
 
 process(B,A,C)
 begin
-   sd_to_e5101<=B & A & C ;
+   sd_to_e8121<=B & A & C ;
 end process;
 
 gen_tot: FOR I IN 1 TO N GENERATE
   tot: reg8
       port map(
-          clr => sc_to_clr9721,
-          rst => sb_to_rst5771,
-          clk => sa_to_clk3381,
-          X => se_to_X5631(I),
-          ld => sd_to_ld4321,
-          Y => sY_to_f9111(I));
+          clr => sc_to_clr1961,
+          rst => sb_to_rst5231,
+          clk => sa_to_clk5861,
+          X => se_to_X7841(I),
+          ld => sd_to_ld6161,
+          Y => sY_to_f7561(I));
 END GENERATE;
 
-sc_to_clr9721<=clr;
-sb_to_rst5771<=rst;
-sa_to_clk3381<=clk;
-se_to_X5631<=sd_to_e5101;
-sd_to_ld4321<=ld;
-sf_to_out1240<=sY_to_f9111;
+sc_to_clr1961<=clr;
+sb_to_rst5231<=rst;
+sa_to_clk5861<=clk;
+se_to_X7841<=sd_to_e8121;
+sd_to_ld6161<=ld;
+sf_to_out6680<=sY_to_f7561;
 
-Z<=sf_to_out1240;
+Z<=sf_to_out6680;
  
 
 end behavioral;

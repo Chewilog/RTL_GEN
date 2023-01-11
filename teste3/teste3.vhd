@@ -38,44 +38,47 @@ component addsub8 is
            Y : out STD_LOGIC_VECTOR (7 downto 0));
 end component;
 
-signal sb_to_a5050 :std_logic_vector(31 downto 0);
-signal spwm_to_clk1662 :STD_LOGIC;
-signal snumber_to_A2654 :INTEGER;
-signal sY_to_t9226 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-constant sconst_to_dutyCicle6488 : std_logic:='0';
-constant sconst_to_en66215 : std_logic:='1';
-constant sconst_to_updown44517 : std_logic:='1';
-constant sconst_to_B53119 : std_logic_vector(7 downto 0):='00000001';
-constant sconst_to_op94621 : std_logic:='1';
-signal sb_to_out98323 :std_logic_vector(15 downto 0);
-signal sc_to_out37124 :std_logic_vector(15 downto 0);
+signal sb_to_a1250 :std_logic_vector(31 downto 0);
+signal spwm_to_clk9442 :STD_LOGIC;
+signal snumber_to_A2174 :INTEGER;
+signal sY_to_t1646 :STD_LOGIC_VECTOR( 7 DOWNTO 0 );
+constant sconst_to_dutyCicle1278 : std_logic:='0';
+constant sconst_to_en46815 : std_logic:='1';
+constant sconst_to_updown53317 : std_logic:='1';
+constant sconst_to_B83819 : std_logic_vector(7 downto 0):='00000001';
+constant sconst_to_op16021 : std_logic:='1';
+signal sb_to_out20323 :std_logic_vector(15 downto 0);
+signal sc_to_out81924 :std_logic_vector(15 downto 0);
 
 begin
 
 clk_div: PWM
+  generic map(
+     dutyCicle =>sconst_to_dutyCicle1278)
+
   port map(
      CLK=>clk,
      RST=>rst,
-     PWM=>spwm_to_clk1662);
+     PWM=>spwm_to_clk9442);
 
 c1: Counter
   port map(
-     CLK=>spwm_to_clk1662,
+     CLK=>spwm_to_clk9442,
      RESET=>rst,
-     EN=>sconst_to_en66215,
-     UPDOWN=>sconst_to_updown44517,
-     NUMBER=>snumber_to_A2654);
+     EN=>sconst_to_en46815,
+     UPDOWN=>sconst_to_updown53317,
+     NUMBER=>snumber_to_A2174);
 
 add1: addsub8
   port map(
-     A=>std_logic_vector(to_unsigned(snumber_to_A2654,1)),
-     B=>sconst_to_B53119,
-     OP=>sconst_to_op94621,
-     Y=>sY_to_t9226);
+     A=>std_logic_vector(to_unsigned(snumber_to_A2174,1)),
+     B=>sconst_to_B83819,
+     OP=>sconst_to_op16021,
+     Y=>sY_to_t1646);
 
 
 
-with sY_to_t9226 select sb_to_a5050
+with sY_to_t1646 select sb_to_a1250
   "00000000000000000000000000000000" when "00000000",
   "00111111001101010000010011110011" when "00000001",
   "00111111100000000000000000000000" when "00000010",
@@ -86,12 +89,12 @@ with sY_to_t9226 select sb_to_a5050
   "10111111001101010000010011110011" when "00000111",
   "00000000000000000000000000000000" when others;
 
-sb_to_out98323<=sb_to_a5050(31 downto 16);
-sc_to_out37124<=sb_to_a5050(15 downto 0);
+sb_to_out20323<=sb_to_a1250(31 downto 16);
+sc_to_out81924<=sb_to_a1250(15 downto 0);
 
 
-Z<=sb_to_out98323;
-Z2<=sc_to_out37124;
+Z<=sb_to_out20323;
+Z2<=sc_to_out81924;
  
 
 end behavioral;
