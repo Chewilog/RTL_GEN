@@ -3,6 +3,7 @@ from generator_files.adder_gen import AdderGenClass
 from generator_files.table_gen import TableGenClass
 from generator_files.unite_in_array import UniteInArrayClass
 from generator_files.splitter import SplitterClass
+from generator_files.and2 import And2Class
 
 #getattr(o, name)()
 class GeneralGenerator:
@@ -11,6 +12,12 @@ class GeneralGenerator:
         self.table_gen_class = TableGenClass()
         self.unite_in_array_class = UniteInArrayClass()
         self.splitter_class = SplitterClass()
+        self.and2_class = And2Class()
+
+    def and2(self,parameters=[],inputs={'a':'signal1','b':'signal2'},outputs={'c':'signal3'}, showconfig=0):
+        if showconfig:
+            return (self.and2_class.input_ports, self.and2_class.output_ports)
+        return self.and2_class.and2(parameters, inputs, outputs)
 
     def adder_gen(self, parameters=['8', '0'], inputs={'a':'signal1', 'b':'signal2'}, outputs={'c':'signal3'}, showconfig=0):
         if showconfig:
